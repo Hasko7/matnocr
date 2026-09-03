@@ -231,14 +231,14 @@ Prüfen:
 
 ### 15. Progress UI
 
-- [ ] Rich Progress Bar
-- [ ] aktuelle Seite
-- [ ] Seitenanzahl
-- [ ] Geschwindigkeit / pages per second
-- [ ] elapsed time
-- [ ] optional ETA
-- [ ] nach Abschluss Zusammenfassung
-- [ ] `--quiet` ohne Animation unterstützen
+- [x] Rich Progress Bar
+- [x] aktuelle Seite
+- [x] Seitenanzahl
+- [x] Geschwindigkeit / pages per second
+- [x] elapsed time
+- [x] ETA
+- [x] nach Abschluss Zusammenfassung
+- [x] `--quiet` ohne Animation unterstützen
 
 Beispielziel:
 

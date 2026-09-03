@@ -107,6 +107,7 @@ def test_quality_output_and_quiet_options(monkeypatch: pytest.MonkeyPatch) -> No
         **kwargs: object,
     ) -> OcrRunResult:
         captured["dpi"] = dpi
+        captured["on_start"] = kwargs["on_start"]
         captured["on_page"] = kwargs["on_page"]
         return OcrRunResult(
             pdf_path=pdf_path,
@@ -144,7 +145,12 @@ def test_quality_output_and_quiet_options(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert captured == {"dpi": 200, "on_page": None, "output": output_path}
+    assert captured == {
+        "dpi": 200,
+        "on_start": None,
+        "on_page": None,
+        "output": output_path,
+    }
 
 
 def test_languages_command_shows_installed_languages(

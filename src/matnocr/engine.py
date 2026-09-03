@@ -58,6 +58,7 @@ class OcrRunResult:
 
 
 PageCallback = Callable[[OcrPageResult], None]
+RunStartCallback = Callable[[int], None]
 
 
 def create_engine(language_tag: str) -> Any:
@@ -82,6 +83,7 @@ async def recognize_pdf(
     *,
     page_selection: str | None = None,
     min_page_coverage: float = MIN_PAGE_COVERAGE,
+    on_start: RunStartCallback | None = None,
     on_page: PageCallback | None = None,
 ) -> OcrRunResult:
     """Run the unchanged Direct-RAM OCR pipeline for every page in a PDF."""
@@ -97,6 +99,8 @@ async def recognize_pdf(
 
     with pdfium.PdfDocument(pdf_path) as pdf:
         page_indices = resolve_page_indices(page_selection, len(pdf))
+        if on_start is not None:
+            on_start(len(page_indices))
 
         for page_index in page_indices:
             page = pdf[page_index]

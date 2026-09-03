@@ -12,7 +12,7 @@ from typer.core import TyperGroup
 
 from .config import QualityPreset, resolve_dpi
 from .doctor import run_doctor_checks
-from .engine import OcrPageResult, OcrRunResult, recognize_pdf
+from .engine import recognize_pdf
 from .languages import (
     LanguageNotInstalledError,
     get_available_languages,
@@ -27,7 +27,12 @@ from .settings import (
     load_default_language,
     save_default_language,
 )
-from .ui import print_doctor_table, print_languages_table
+from .ui import (
+    OcrProgress,
+    print_completion_summary,
+    print_doctor_table,
+    print_languages_table,
+)
 
 
 class DefaultOcrGroup(TyperGroup):
@@ -93,39 +98,6 @@ def app_callback(
     """Run OCR directly or use a management command."""
 
     configure_utf8_output()
-
-
-def print_page_progress(page: OcrPageResult) -> None:
-    """Print prototype-compatible timing details for one completed page."""
-
-    print(
-        f"Page {page.page_number}: {page.timing.total_seconds:.3f}s "
-        f"[{page.render_mode}] {page.width}x{page.height} "
-        f"[bitmap={page.timing.bitmap_seconds:.3f} "
-        f"| OCR={page.timing.ocr_seconds:.3f}]"
-    )
-
-
-def print_summary(result: OcrRunResult, output_path: Path) -> None:
-    """Print the same summary fields as the benchmark prototype."""
-
-    page_count = result.page_count
-    average_total = result.total_seconds / page_count if page_count else 0.0
-    average_bitmap = result.total_bitmap_seconds / page_count if page_count else 0.0
-    average_ocr = result.total_ocr_seconds / page_count if page_count else 0.0
-
-    print()
-    print("Summary")
-    print("-------")
-    print(f"Pages:          {page_count}")
-    print(f"Original scan:  {result.original_pages}")
-    print(f"Rendered:       {result.rendered_pages}")
-    print(f"Total:          {result.total_seconds:.3f}s")
-    print(f"Average:        {average_total:.3f}s/page")
-    print(f"Bitmap:         {average_bitmap:.3f}s/page")
-    print(f"OCR:            {average_ocr:.3f}s/page")
-    print()
-    print(f"Saved: {output_path}")
 
 
 @app.command("ocr")
@@ -226,21 +198,23 @@ def main(
         print()
 
     try:
-        result = asyncio.run(
-            recognize_pdf(
-                pdf_path,
-                language_tag,
-                resolved_dpi,
-                page_selection=pages,
-                on_page=None if quiet else print_page_progress,
+        with OcrProgress(enabled=not quiet) as progress:
+            result = asyncio.run(
+                recognize_pdf(
+                    pdf_path,
+                    language_tag,
+                    resolved_dpi,
+                    page_selection=pages,
+                    on_start=None if quiet else progress.begin,
+                    on_page=None if quiet else progress.advance,
+                )
             )
-        )
     except PageRangeError as error:
         raise typer.BadParameter(str(error), param_hint="--pages") from error
 
     output_path = write_text_output(result, output)
     if not quiet:
-        print_summary(result, output_path)
+        print_completion_summary(result, output_path)
 
 
 @languages_app.callback()
