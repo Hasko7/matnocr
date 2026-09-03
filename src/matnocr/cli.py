@@ -1,20 +1,64 @@
 """Typer command-line interface for MatnOCR."""
 
 import asyncio
+import sys
 from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated
 
 import typer
+from typer import _click
+from typer.core import TyperGroup
 
-from .config import DEFAULT_LANGUAGE, QualityPreset, resolve_dpi
+from .config import QualityPreset, resolve_dpi
+from .doctor import run_doctor_checks
 from .engine import OcrPageResult, OcrRunResult, recognize_pdf
-from .languages import is_rtl, resolve_language
+from .languages import (
+    LanguageNotInstalledError,
+    get_available_languages,
+    is_rtl,
+    resolve_language,
+)
 from .output import write_text_output
 from .pages import PageRangeError, validate_page_selection
 from .renderer import get_pdf_page_count
+from .settings import (
+    SettingsError,
+    load_default_language,
+    save_default_language,
+)
+from .ui import print_doctor_table, print_languages_table
 
-app = typer.Typer(add_completion=False)
+
+class DefaultOcrGroup(TyperGroup):
+    """Route legacy ``matnocr PDF`` invocations to the OCR command."""
+
+    def parse_args(self, ctx: _click.Context, args: list[str]) -> list[str]:
+        if (
+            args
+            and args[0] not in self.commands
+            and args[0]
+            not in {
+                "--help",
+                "--version",
+            }
+        ):
+            args.insert(0, "ocr")
+        return super().parse_args(ctx, args)
+
+
+app = typer.Typer(
+    cls=DefaultOcrGroup,
+    add_completion=False,
+    no_args_is_help=True,
+    help="Fast local PDF OCR powered by Windows.",
+)
+languages_app = typer.Typer(
+    invoke_without_command=True,
+    no_args_is_help=False,
+    help="List and manage Windows OCR languages.",
+)
+app.add_typer(languages_app, name="languages")
 
 
 def version_callback(value: bool) -> None:
@@ -23,6 +67,32 @@ def version_callback(value: bool) -> None:
     if value:
         typer.echo(version("matnocr"))
         raise typer.Exit
+
+
+def configure_utf8_output() -> None:
+    """Allow native language names and status marks on legacy Windows shells."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
+@app.callback()
+def app_callback(
+    show_version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            callback=version_callback,
+            is_eager=True,
+            help="Show the MatnOCR version and exit.",
+        ),
+    ] = False,
+) -> None:
+    """Run OCR directly or use a management command."""
+
+    configure_utf8_output()
 
 
 def print_page_progress(page: OcrPageResult) -> None:
@@ -58,7 +128,7 @@ def print_summary(result: OcrRunResult, output_path: Path) -> None:
     print(f"Saved: {output_path}")
 
 
-@app.command()
+@app.command("ocr")
 def main(
     pdf: Annotated[
         Path,
@@ -69,7 +139,10 @@ def main(
             readable=True,
         ),
     ],
-    lang: Annotated[str, typer.Option("--lang")] = DEFAULT_LANGUAGE,
+    lang: Annotated[
+        str | None,
+        typer.Option("--lang", help="Installed Windows OCR language."),
+    ] = None,
     dpi: Annotated[
         int | None,
         typer.Option("--dpi", help="OCR resolution: 200, 250, or 300 DPI."),
@@ -104,15 +177,6 @@ def main(
         bool,
         typer.Option("--page-count", help="Print the PDF page count and exit."),
     ] = False,
-    show_version: Annotated[
-        bool,
-        typer.Option(
-            "--version",
-            callback=version_callback,
-            is_eager=True,
-            help="Show the MatnOCR version and exit.",
-        ),
-    ] = False,
 ) -> None:
     """Recognize a scanned PDF with Windows OCR."""
 
@@ -141,7 +205,14 @@ def main(
         except PageRangeError as error:
             raise typer.BadParameter(str(error), param_hint="--pages") from error
 
-    language_tag = resolve_language(lang)
+    try:
+        requested_language = lang or load_default_language()
+        language_tag = resolve_language(requested_language)
+    except (LanguageNotInstalledError, SettingsError) as error:
+        raise typer.BadParameter(
+            str(error),
+            param_hint="--lang/default language",
+        ) from error
 
     if not quiet:
         print()
@@ -170,3 +241,49 @@ def main(
     output_path = write_text_output(result, output)
     if not quiet:
         print_summary(result, output_path)
+
+
+@languages_app.callback()
+def languages_command(ctx: typer.Context) -> None:
+    """Show all OCR languages currently available to Windows OCR."""
+
+    if ctx.invoked_subcommand is not None:
+        return
+
+    try:
+        default_language = load_default_language()
+    except SettingsError as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    print_languages_table(get_available_languages(), default_language)
+
+
+@languages_app.command("default")
+def set_default_language_command(
+    language: Annotated[
+        str,
+        typer.Argument(help="Installed OCR language code, for example ar or en-US."),
+    ],
+) -> None:
+    """Set the default language used when --lang is omitted."""
+
+    try:
+        language_tag = resolve_language(language)
+        settings_path = save_default_language(language_tag)
+    except (LanguageNotInstalledError, SettingsError) as error:
+        typer.echo(f"✗ {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    typer.echo(f"✓ Default OCR language: {language_tag}")
+    typer.echo(f"Saved in: {settings_path}")
+
+
+@app.command("doctor")
+def doctor_command() -> None:
+    """Check the Windows OCR and Direct-RAM runtime environment."""
+
+    checks = run_doctor_checks()
+    print_doctor_table(checks)
+    if not all(check.passed for check in checks):
+        raise typer.Exit(code=1)

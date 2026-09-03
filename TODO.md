@@ -207,25 +207,27 @@ Unterstützen:
 
 ### 13. `languages` Command
 
-- [ ] installierte Windows-OCR-Sprachen dynamisch auslesen
-- [ ] Sprachcode anzeigen
-- [ ] lesbaren Namen anzeigen
-- [ ] aktive / verfügbare Sprachen als Rich-Tabelle darstellen
-- [ ] fehlende Sprache bei OCR-Aufruf verständlich melden
+- [x] installierte Windows-OCR-Sprachen dynamisch auslesen
+- [x] Sprachcode anzeigen
+- [x] lesbaren Namen anzeigen
+- [x] aktive / verfügbare Sprachen als Rich-Tabelle darstellen
+- [x] fehlende Sprache bei OCR-Aufruf verständlich melden
+- [x] persistente Standardsprache mit `languages default <code>` setzen
+- [x] Sprachpaketverwaltung bewusst Windows / PowerShell überlassen
 
 ### 14. `doctor` Command
 
 Prüfen:
 
-- [ ] unterstütztes Windows
-- [ ] Windows.Media.Ocr verfügbar
-- [ ] installierte OCR-Sprachen
-- [ ] PDF-Renderer verfügbar
-- [ ] Direct-RAM-Konvertierung funktioniert
-- [ ] max. Bilddimension auslesen
-- [ ] Python-Version anzeigen
-- [ ] Paketversion anzeigen
-- [ ] Diagnose klar mit ✓ / ✗ darstellen
+- [x] unterstütztes Windows
+- [x] Windows.Media.Ocr verfügbar
+- [x] installierte OCR-Sprachen
+- [x] PDF-Renderer verfügbar
+- [x] Direct-RAM-Konvertierung funktioniert
+- [x] max. Bilddimension auslesen
+- [x] Python-Version anzeigen
+- [x] Paketversion anzeigen
+- [x] Diagnose klar mit ✓ / ✗ darstellen
 
 ### 15. Progress UI
 

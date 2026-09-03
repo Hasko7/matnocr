@@ -9,6 +9,8 @@ from matnocr import languages
 @dataclass
 class FakeLanguage:
     language_tag: str
+    display_name: str = "Display name"
+    native_name: str = "Native name"
 
 
 class FakeOcrEngine:
@@ -33,7 +35,10 @@ def test_resolve_language(requested: str, expected: str) -> None:
 
 
 def test_resolve_language_reports_installed_languages() -> None:
-    with pytest.raises(RuntimeError, match="Installed: ar-SA, de-DE, tr"):
+    with pytest.raises(
+        languages.LanguageNotInstalledError,
+        match="Installed languages: ar-SA, de-DE, tr",
+    ):
         languages.resolve_language("ru")
 
 

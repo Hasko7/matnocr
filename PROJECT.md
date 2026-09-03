@@ -380,6 +380,17 @@ Installed OCR languages
 ✓ tr-TR    Turkish
 ```
 
+Die Standardsprache für Aufrufe ohne `--lang` wird pro Windows-Benutzer
+gespeichert:
+
+```powershell
+matnocr languages default ar-SA
+```
+
+MatnOCR zeigt nur die von Windows OCR bereitgestellten Sprachen an und verändert
+keine Windows-Sprachpakete. Installation und Entfernung bleiben bewusst bei den
+Windows-Einstellungen beziehungsweise einer administrativen PowerShell.
+
 ### Systemdiagnose
 
 ```powershell
