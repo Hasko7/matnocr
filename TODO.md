@@ -195,14 +195,15 @@ Unterstützen:
 1,5,20-35,100
 ```
 
-- [ ] einzelne Seiten
-- [ ] Bereiche
-- [ ] Kombinationen
-- [ ] Duplikate entfernen
-- [ ] Reihenfolge definieren
-- [ ] ungültige Seiten erkennen
-- [ ] Seiten außerhalb der PDF erkennen
-- [ ] gute Fehlermeldungen schreiben
+- [x] einzelne Seiten
+- [x] Bereiche
+- [x] Kombinationen
+- [x] Duplikate entfernen
+- [x] Reihenfolge definieren: aufsteigend nach PDF-Seite
+- [x] ungültige Seiten erkennen
+- [x] Seiten außerhalb der PDF erkennen
+- [x] gute Fehlermeldungen schreiben
+- [x] Seitenanzahl einer PDF mit `--page-count` ausgeben
 
 ### 13. `languages` Command
 
@@ -282,7 +283,7 @@ OCR  █████████████████████████
 
 ### 20. Unit Tests
 
-- [ ] Page-Range-Parser
+- [x] Page-Range-Parser
 - [x] Language Resolution
 - [x] RTL-Sortierung
 - [x] Dateinamengenerierung

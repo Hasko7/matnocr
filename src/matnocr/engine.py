@@ -12,6 +12,7 @@ from winrt.windows.media.ocr import OcrEngine
 
 from .config import MIN_PAGE_COVERAGE
 from .languages import is_rtl
+from .pages import resolve_page_indices
 from .renderer import RenderMode, get_ocr_bitmap
 from .rtl import reconstruct_text
 
@@ -79,6 +80,7 @@ async def recognize_pdf(
     language_tag: str,
     dpi: int,
     *,
+    page_selection: str | None = None,
     min_page_coverage: float = MIN_PAGE_COVERAGE,
     on_page: PageCallback | None = None,
 ) -> OcrRunResult:
@@ -94,7 +96,9 @@ async def recognize_pdf(
     total_start = time.perf_counter()
 
     with pdfium.PdfDocument(pdf_path) as pdf:
-        for page_index in range(len(pdf)):
+        page_indices = resolve_page_indices(page_selection, len(pdf))
+
+        for page_index in page_indices:
             page = pdf[page_index]
             page_start = time.perf_counter()
 

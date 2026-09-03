@@ -10,6 +10,8 @@ from .config import DEFAULT_DPI, DEFAULT_LANGUAGE, DPI_CHOICES
 from .engine import OcrPageResult, OcrRunResult, recognize_pdf
 from .languages import is_rtl, resolve_language
 from .output import write_text_output
+from .pages import PageRangeError, validate_page_selection
+from .renderer import get_pdf_page_count
 
 app = typer.Typer(add_completion=False)
 
@@ -60,13 +62,36 @@ def main(
     ],
     lang: Annotated[str, typer.Option("--lang")] = DEFAULT_LANGUAGE,
     dpi: Annotated[int, typer.Option("--dpi")] = DEFAULT_DPI,
+    pages: Annotated[
+        str | None,
+        typer.Option("--pages", help="Pages to OCR, for example: 1,5,20-35"),
+    ] = None,
+    show_page_count: Annotated[
+        bool,
+        typer.Option("--page-count", help="Print the PDF page count and exit."),
+    ] = False,
 ) -> None:
     """Recognize a scanned PDF with Windows OCR."""
 
+    pdf_path = pdf.resolve()
+
+    if show_page_count:
+        if pages is not None:
+            raise typer.BadParameter(
+                "--page-count cannot be combined with --pages.",
+                param_hint="--page-count",
+            )
+        typer.echo(get_pdf_page_count(pdf_path))
+        return
+
     if dpi not in DPI_CHOICES:
         raise typer.BadParameter("DPI must be 200, 250, or 300.", param_hint="--dpi")
+    if pages is not None:
+        try:
+            validate_page_selection(pages)
+        except PageRangeError as error:
+            raise typer.BadParameter(str(error), param_hint="--pages") from error
 
-    pdf_path = pdf.resolve()
     language_tag = resolve_language(lang)
 
     print()
@@ -79,13 +104,18 @@ def main(
     print("Pipeline:  Direct RAM")
     print()
 
-    result = asyncio.run(
-        recognize_pdf(
-            pdf_path,
-            language_tag,
-            dpi,
-            on_page=print_page_progress,
+    try:
+        result = asyncio.run(
+            recognize_pdf(
+                pdf_path,
+                language_tag,
+                dpi,
+                page_selection=pages,
+                on_page=print_page_progress,
+            )
         )
-    )
+    except PageRangeError as error:
+        raise typer.BadParameter(str(error), param_hint="--pages") from error
+
     output_path = write_text_output(result)
     print_summary(result, output_path)

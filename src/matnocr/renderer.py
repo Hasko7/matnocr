@@ -1,8 +1,10 @@
 """PDF rendering for the OCR pipeline."""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Literal
 
+import pypdfium2 as pdfium
 import pypdfium2.raw as pdfium_c
 from winrt.windows.graphics.imaging import BitmapPixelFormat, SoftwareBitmap
 from winrt.windows.storage.streams import DataWriter
@@ -18,6 +20,13 @@ class RenderedPage:
     width: int
     height: int
     mode: RenderMode
+
+
+def get_pdf_page_count(pdf_path: Path) -> int:
+    """Return the number of pages in a PDF."""
+
+    with pdfium.PdfDocument(pdf_path) as pdf:
+        return len(pdf)
 
 
 def find_dominant_image(page: Any) -> tuple[Any | None, float]:
