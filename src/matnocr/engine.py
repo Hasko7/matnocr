@@ -1,1 +1,160 @@
-"""Windows OCR engine integration."""
+"""Windows OCR engine integration and PDF orchestration."""
+
+import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import pypdfium2 as pdfium
+from winrt.windows.globalization import Language
+from winrt.windows.media.ocr import OcrEngine
+
+from .config import MIN_PAGE_COVERAGE
+from .languages import is_rtl
+from .renderer import RenderMode, get_ocr_bitmap
+from .rtl import reconstruct_text
+
+
+@dataclass(frozen=True, slots=True)
+class PageTiming:
+    """Measured durations for one page."""
+
+    bitmap_seconds: float
+    ocr_seconds: float
+    total_seconds: float
+
+
+@dataclass(frozen=True, slots=True)
+class OcrPageResult:
+    """Raw OCR text and timing data for one page."""
+
+    page_number: int
+    text: str
+    width: int
+    height: int
+    render_mode: RenderMode
+    timing: PageTiming
+
+
+@dataclass(frozen=True, slots=True)
+class OcrRunResult:
+    """Structured result of a complete PDF OCR run."""
+
+    pdf_path: Path
+    language_tag: str
+    dpi: int
+    pages: tuple[OcrPageResult, ...]
+    total_seconds: float
+    total_bitmap_seconds: float
+    total_ocr_seconds: float
+    original_pages: int
+    rendered_pages: int
+
+    @property
+    def page_count(self) -> int:
+        return len(self.pages)
+
+
+PageCallback = Callable[[OcrPageResult], None]
+
+
+def create_engine(language_tag: str) -> Any:
+    """Create a Windows OCR engine for an installed language tag."""
+
+    engine = OcrEngine.try_create_from_language(Language(language_tag))
+    if engine is None:
+        raise RuntimeError(f"Could not create Windows OCR engine for {language_tag}")
+    return engine
+
+
+async def recognize(engine: Any, software_bitmap: Any) -> Any:
+    """Recognize text in one SoftwareBitmap."""
+
+    return await engine.recognize_async(software_bitmap)
+
+
+async def recognize_pdf(
+    pdf_path: Path,
+    language_tag: str,
+    dpi: int,
+    *,
+    min_page_coverage: float = MIN_PAGE_COVERAGE,
+    on_page: PageCallback | None = None,
+) -> OcrRunResult:
+    """Run the unchanged Direct-RAM OCR pipeline for every page in a PDF."""
+
+    engine = create_engine(language_tag)
+    rtl = is_rtl(language_tag)
+    pages: list[OcrPageResult] = []
+    total_bitmap = 0.0
+    total_ocr = 0.0
+    original_pages = 0
+    rendered_pages = 0
+    total_start = time.perf_counter()
+
+    with pdfium.PdfDocument(pdf_path) as pdf:
+        for page_index in range(len(pdf)):
+            page = pdf[page_index]
+            page_start = time.perf_counter()
+
+            try:
+                bitmap_start = time.perf_counter()
+                rendered = get_ocr_bitmap(page, dpi, min_page_coverage)
+                bitmap_time = time.perf_counter() - bitmap_start
+                total_bitmap += bitmap_time
+
+                if (
+                    rendered.width > OcrEngine.max_image_dimension
+                    or rendered.height > OcrEngine.max_image_dimension
+                ):
+                    rendered.bitmap.close()
+                    raise RuntimeError(
+                        f"Page {page_index + 1}: {rendered.width}x{rendered.height} "
+                        f"exceeds Windows OCR limit {OcrEngine.max_image_dimension}"
+                    )
+
+                try:
+                    ocr_start = time.perf_counter()
+                    result = await recognize(engine, rendered.bitmap)
+                    ocr_time = time.perf_counter() - ocr_start
+                finally:
+                    rendered.bitmap.close()
+
+                total_ocr += ocr_time
+                text = reconstruct_text(result, rtl)
+                page_result = OcrPageResult(
+                    page_number=page_index + 1,
+                    text=text,
+                    width=rendered.width,
+                    height=rendered.height,
+                    render_mode=rendered.mode,
+                    timing=PageTiming(
+                        bitmap_seconds=bitmap_time,
+                        ocr_seconds=ocr_time,
+                        total_seconds=time.perf_counter() - page_start,
+                    ),
+                )
+                pages.append(page_result)
+
+                if rendered.mode == "ORIGINAL":
+                    original_pages += 1
+                else:
+                    rendered_pages += 1
+
+                if on_page is not None:
+                    on_page(page_result)
+            finally:
+                page.close()
+
+    return OcrRunResult(
+        pdf_path=pdf_path,
+        language_tag=language_tag,
+        dpi=dpi,
+        pages=tuple(pages),
+        total_seconds=time.perf_counter() - total_start,
+        total_bitmap_seconds=total_bitmap,
+        total_ocr_seconds=total_ocr,
+        original_pages=original_pages,
+        rendered_pages=rendered_pages,
+    )

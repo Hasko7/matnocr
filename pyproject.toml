@@ -1,18 +1,28 @@
 [project]
 name = "matnocr"
 version = "0.1.0"
-description = "Add your description here"
+description = "Fast local OCR for scanned PDFs on Windows."
 readme = "README.md"
 requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = [
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+]
 dependencies = [
     "pypdfium2>=5.13.0",
     "rich>=15.0.0",
     "typer>=0.27.2",
+    "winrt-windows-foundation>=3.2.1",
+    "winrt-windows-foundation-collections>=3.2.1",
     "winrt-windows-globalization>=3.2.1",
     "winrt-windows-graphics-imaging>=3.2.1",
     "winrt-windows-media-ocr>=3.2.1",
     "winrt-windows-storage-streams>=3.2.1",
 ]
+
+[project.scripts]
+matnocr = "matnocr.cli:app"
 
 [build-system]
 requires = ["uv_build>=0.12.9,<0.13"]

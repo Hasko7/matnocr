@@ -72,7 +72,7 @@ Begründung:
 - [x] Projektlizenz festlegen: `Apache-2.0`
 - [x] `LICENSE` erstellen
 - [x] Drittanbieter-Lizenzpflichten dokumentieren (`THIRD_PARTY_NOTICES.md`)
-- [ ] Lizenz im `pyproject.toml` eintragen *(sobald Phase 1 / `pyproject.toml` angelegt wird)*
+- [x] Lizenz im `pyproject.toml` eintragen
 - [ ] Lizenzhinweise in README ergänzen *(sobald README angelegt wird)*
 - [ ] bei Windows-Binärreleases PDFium- und Third-Party-Lizenzdateien mit ausliefern
 
@@ -138,23 +138,23 @@ license-files = ["LICENSE"]
 
 ### 7. Aktuellen OCR-Prototyp modularisieren
 
-- [ ] Windows-OCR-Code aus dem Testskript extrahieren
-- [ ] Engine-Erstellung in eigenes Modul verschieben
-- [ ] Direct-RAM-Pipeline übernehmen
-- [ ] PDF-Renderer abstrahieren
-- [ ] RTL-Rekonstruktion in eigenes Modul verschieben
-- [ ] Language Resolution auslagern
-- [ ] Output-Erzeugung auslagern
-- [ ] Timing-Code optional / strukturiert machen
-- [ ] keine globalen Projektvariablen mehr verwenden
+- [x] Windows-OCR-Code aus dem Testskript extrahieren
+- [x] Engine-Erstellung in eigenes Modul verschieben
+- [x] Direct-RAM-Pipeline übernehmen
+- [x] PDF-Renderer abstrahieren
+- [x] RTL-Rekonstruktion in eigenes Modul verschieben
+- [x] Language Resolution auslagern
+- [x] Output-Erzeugung auslagern
+- [x] Timing-Code optional / strukturiert machen
+- [x] keine globalen Projektvariablen mehr verwenden
 
 ## Phase 2 – CLI v0.1 bauen
 
 ### 8. Typer + Rich integrieren
 
-- [ ] Typer hinzufügen
-- [ ] Rich hinzufügen
-- [ ] Haupt-App erstellen
+- [x] Typer hinzufügen
+- [x] Rich hinzufügen
+- [x] Haupt-App erstellen
 - [ ] schöne `--help`-Ausgabe gestalten
 - [ ] Farb- und Panel-Design festlegen
 - [ ] einheitliche Fehlermeldungen definieren
@@ -162,17 +162,17 @@ license-files = ["LICENSE"]
 
 ### 9. Console Entry Point einrichten
 
-- [ ] `[project.scripts]` konfigurieren
-- [ ] `matnocr = "matnocr.cli:app"`
-- [ ] lokale Installation testen
-- [ ] prüfen, dass `matnocr --help` funktioniert
-- [ ] `python -m matnocr` ebenfalls unterstützen
+- [x] `[project.scripts]` konfigurieren
+- [x] `matnocr = "matnocr.cli:app"`
+- [x] lokale Installation testen
+- [x] prüfen, dass `matnocr --help` funktioniert
+- [x] `python -m matnocr` ebenfalls unterstützen
 
 ### 10. Basisargumente implementieren
 
-- [ ] PDF als positional Argument
-- [ ] `--lang`
-- [ ] `--dpi`
+- [x] PDF als positional Argument
+- [x] `--lang`
+- [x] `--dpi`
 - [ ] `--quality`
 - [ ] `-o / --output`
 - [ ] `--quiet`
@@ -249,10 +249,10 @@ OCR  █████████████████████████
 
 ### 16. Output v0.1
 
-- [ ] TXT als Standard
-- [ ] Seitenmarker beibehalten
-- [ ] UTF-8 schreiben
-- [ ] automatischen Dateinamen erzeugen
+- [x] TXT als Standard
+- [x] Seitenmarker beibehalten
+- [x] UTF-8 schreiben
+- [x] automatischen Dateinamen erzeugen
 - [ ] existierende Dateien nicht versehentlich überschreiben
 - [ ] Verhalten für `--output` definieren
 - [ ] Fehler bei nicht beschreibbaren Pfaden sauber behandeln
@@ -276,20 +276,20 @@ OCR  █████████████████████████
 
 ### 19. pytest einrichten
 
-- [ ] Unit-Test-Struktur erstellen
+- [x] Unit-Test-Struktur erstellen
 - [ ] Integration-Test-Struktur erstellen
 - [ ] pytest konfigurieren
 
 ### 20. Unit Tests
 
 - [ ] Page-Range-Parser
-- [ ] Language Resolution
-- [ ] RTL-Sortierung
-- [ ] Dateinamengenerierung
-- [ ] Quality-Presets
-- [ ] Output Formatting
-- [ ] CLI Validation
-- [ ] Konfiguration
+- [x] Language Resolution
+- [x] RTL-Sortierung
+- [x] Dateinamengenerierung
+- [x] Quality-Presets
+- [x] Output Formatting
+- [x] CLI Validation
+- [x] Konfiguration
 
 ### 21. Integration Tests
 
