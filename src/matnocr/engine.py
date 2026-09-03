@@ -82,6 +82,7 @@ async def recognize_pdf(
     dpi: int,
     *,
     page_selection: str | None = None,
+    preserve_layout: bool = True,
     min_page_coverage: float = MIN_PAGE_COVERAGE,
     on_start: RunStartCallback | None = None,
     on_page: PageCallback | None = None,
@@ -130,7 +131,11 @@ async def recognize_pdf(
                     rendered.bitmap.close()
 
                 total_ocr += ocr_time
-                text = reconstruct_text(result, rtl)
+                text = reconstruct_text(
+                    result,
+                    rtl,
+                    preserve_layout=preserve_layout,
+                )
                 page_result = OcrPageResult(
                     page_number=page_index + 1,
                     text=text,

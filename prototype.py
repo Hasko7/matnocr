@@ -2,10 +2,10 @@ import argparse
 import asyncio
 import time
 from pathlib import Path
+from statistics import median
 
 import pypdfium2 as pdfium
 import pypdfium2.raw as pdfium_c
-
 from winrt.windows.globalization import Language
 from winrt.windows.graphics.imaging import (
     BitmapPixelFormat,
@@ -67,7 +67,11 @@ def is_rtl(language_tag: str) -> bool:
 # TEXT
 # ============================================================
 
-def reconstruct_text(result, rtl: bool) -> str:
+def reconstruct_text(
+    result,
+    rtl: bool,
+    preserve_layout: bool = True,
+) -> str:
     lines = []
 
     for line in result.lines:
@@ -87,14 +91,87 @@ def reconstruct_text(result, rtl: bool) -> str:
                     w.bounding_rect.x
             )
 
+        text = " ".join(
+            w.text
+            for w in words
+        )
+
+        if not preserve_layout or not words:
+            lines.append(text)
+            continue
+
+        top = min(
+            w.bounding_rect.y
+            for w in words
+        )
+        bottom = max(
+            w.bounding_rect.y
+            + w.bounding_rect.height
+            for w in words
+        )
+
         lines.append(
-            " ".join(
-                w.text
-                for w in words
+            (
+                text,
+                top,
+                bottom,
+                bottom - top,
             )
         )
 
-    return "\n".join(lines)
+    if not preserve_layout:
+        return " ".join(
+            line
+            for line in lines
+            if line
+        )
+
+    if not lines:
+        return ""
+
+    gaps = [
+        max(
+            0.0,
+            lines[index + 1][1]
+            - lines[index][2],
+        )
+        for index in range(len(lines) - 1)
+    ]
+    heights = [
+        height
+        for _, _, _, height in lines
+        if height > 0
+    ]
+
+    if gaps and heights:
+        if len(gaps) == 1:
+            paragraph_gap = median(heights) * 0.8
+        else:
+            ordered_gaps = sorted(gaps)
+            normal_gap = median(
+                ordered_gaps[
+                    :max(1, (len(ordered_gaps) + 1) // 2)
+                ]
+            )
+            paragraph_gap = max(
+                median(heights) * 0.8,
+                normal_gap * 1.8,
+            )
+    else:
+        paragraph_gap = float("inf")
+
+    output = []
+
+    for index, line in enumerate(lines):
+        output.append(line[0])
+
+        if (
+            index < len(gaps)
+            and gaps[index] > paragraph_gap
+        ):
+            output.append("")
+
+    return "\n".join(output)
 
 
 # ============================================================
@@ -314,6 +391,7 @@ async def run_ocr(
     pdf_path: Path,
     language_tag: str,
     dpi: int,
+    preserve_layout: bool = True,
 ):
     engine = (
         OcrEngine.try_create_from_language(
@@ -495,6 +573,7 @@ async def run_ocr(
             text = reconstruct_text(
                 result,
                 rtl,
+                preserve_layout,
             )
 
             elapsed = (
@@ -623,6 +702,15 @@ def parse_args():
         ),
     )
 
+    parser.add_argument(
+        "--no-layout",
+        action="store_true",
+        help=(
+            "Ignore line and paragraph layout "
+            "and join the text continuously."
+        ),
+    )
+
     return parser.parse_args()
 
 
@@ -648,6 +736,7 @@ async def main():
         pdf_path,
         language_tag,
         args.dpi,
+        not args.no_layout,
     )
 
 

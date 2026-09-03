@@ -32,6 +32,7 @@ def test_help_is_available() -> None:
     assert "--quality" in ocr_help.stdout
     assert "--output" in ocr_help.stdout
     assert "--quiet" in ocr_help.stdout
+    assert "--no-layout" in ocr_help.stdout
 
 
 def test_pdf_argument_must_exist() -> None:
@@ -109,6 +110,7 @@ def test_quality_output_and_quiet_options(monkeypatch: pytest.MonkeyPatch) -> No
         captured["dpi"] = dpi
         captured["on_start"] = kwargs["on_start"]
         captured["on_page"] = kwargs["on_page"]
+        captured["preserve_layout"] = kwargs["preserve_layout"]
         return OcrRunResult(
             pdf_path=pdf_path,
             language_tag=language_tag,
@@ -149,8 +151,26 @@ def test_quality_output_and_quiet_options(monkeypatch: pytest.MonkeyPatch) -> No
         "dpi": 200,
         "on_start": None,
         "on_page": None,
+        "preserve_layout": True,
         "output": output_path,
     }
+
+    captured.clear()
+    no_layout_result = runner.invoke(
+        app,
+        [
+            str(existing_file),
+            "--quality",
+            "fast",
+            "--quiet",
+            "--no-layout",
+            "-o",
+            str(output_path),
+        ],
+    )
+
+    assert no_layout_result.exit_code == 0
+    assert captured["preserve_layout"] is False
 
 
 def test_languages_command_shows_installed_languages(

@@ -145,6 +145,13 @@ def main(
         bool,
         typer.Option("--quiet", help="Suppress progress and summary output."),
     ] = False,
+    no_layout: Annotated[
+        bool,
+        typer.Option(
+            "--no-layout",
+            help="Ignore line and paragraph layout; join text continuously.",
+        ),
+    ] = False,
     show_page_count: Annotated[
         bool,
         typer.Option("--page-count", help="Print the PDF page count and exit."),
@@ -205,6 +212,7 @@ def main(
                     language_tag,
                     resolved_dpi,
                     page_selection=pages,
+                    preserve_layout=not no_layout,
                     on_start=None if quiet else progress.begin,
                     on_page=None if quiet else progress.advance,
                 )

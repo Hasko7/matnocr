@@ -265,6 +265,13 @@ he
 
 Die Sortierung geschieht pro erkannter Zeile.
 
+MatnOCR bewahrt standardmäßig die von Windows OCR erkannten Zeilen und erkennt
+auffällig große vertikale Abstände als Absatzwechsel. Die Schwelle wird pro
+Seite aus Wort-Bounding-Boxes und den typischen Zeilenabständen bestimmt. Dafür
+ist weder eine zweite OCR-Runde noch eine temporäre Bilddatei erforderlich. Mit
+`--no-layout` werden die erkannten Zeilen stattdessen mit Leerzeichen zu einem
+fortlaufenden Text verbunden.
+
 ### Beispiel
 
 Windows-interne visuelle Reihenfolge:
@@ -352,6 +359,12 @@ nativeocr book.pdf -o output.txt
 
 ```powershell
 nativeocr book.pdf --quiet
+```
+
+### Layout nicht beachten
+
+```powershell
+matnocr book.pdf --no-layout
 ```
 
 ## 9. Geplante Subcommands
@@ -446,6 +459,11 @@ Primär:
 ```text
 TXT
 ```
+
+Die normale TXT-Ausgabe enthält die von Windows OCR erkannten Zeilen und ergänzt
+bei deutlich größeren vertikalen Zeilenabständen eine Leerzeile. Mit
+`--no-layout` werden die Zeilen zu fortlaufendem Text verbunden. Beide Modi
+verändern keine erkannten Wörter.
 
 Seitenmarker:
 

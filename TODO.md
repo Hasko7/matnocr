@@ -256,6 +256,10 @@ OCR  █████████████████████████
 - [x] Seitenmarker beibehalten
 - [x] UTF-8 schreiben
 - [x] automatischen Dateinamen erzeugen
+- [x] OCR-Zeilenumbrüche aus `OcrLine` standardmäßig beibehalten
+- [x] Absatzerkennung über Bounding-Boxes als Standardmodus
+- [x] Layout mit `--no-layout` abschalten und Text fortlaufend verbinden
+- [x] Layoutmodus ohne zweite OCR-Runde und ohne temporäre Rasterdateien
 - [ ] existierende Dateien nicht versehentlich überschreiben
 - [ ] Verhalten für `--output` definieren
 - [ ] Fehler bei nicht beschreibbaren Pfaden sauber behandeln
