@@ -1,21 +1,46 @@
 """MatnOCR application configuration."""
 
 from dataclasses import dataclass
+from enum import StrEnum
 from types import MappingProxyType
 from typing import Final
 
+
+class QualityPreset(StrEnum):
+    """Named OCR quality levels exposed by the CLI."""
+
+    FAST = "fast"
+    BALANCED = "balanced"
+    QUALITY = "quality"
+
+
 DPI_PRESETS: Final = MappingProxyType(
     {
-        "fast": 200,
-        "balanced": 250,
-        "quality": 300,
+        QualityPreset.FAST: 200,
+        QualityPreset.BALANCED: 250,
+        QualityPreset.QUALITY: 300,
     }
 )
 DPI_CHOICES: Final = (200, 250, 300)
 SUPPORTED_DPI: Final = frozenset(DPI_CHOICES)
-DEFAULT_DPI: Final = DPI_PRESETS["quality"]
+DEFAULT_QUALITY: Final = QualityPreset.QUALITY
+DEFAULT_DPI: Final = DPI_PRESETS[DEFAULT_QUALITY]
 DEFAULT_LANGUAGE: Final = "ar"
 MIN_PAGE_COVERAGE: Final = 0.70
+
+
+def resolve_dpi(dpi: int | None, quality: QualityPreset | None) -> int:
+    """Resolve a direct DPI or quality preset to a supported DPI value."""
+
+    if dpi is not None and quality is not None:
+        raise ValueError("--dpi and --quality cannot be combined.")
+
+    if dpi is not None:
+        if dpi not in SUPPORTED_DPI:
+            raise ValueError("DPI must be 200, 250, or 300.")
+        return dpi
+
+    return DPI_PRESETS[quality or DEFAULT_QUALITY]
 
 
 @dataclass(frozen=True, slots=True)

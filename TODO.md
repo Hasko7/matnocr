@@ -173,18 +173,18 @@ license-files = ["LICENSE"]
 - [x] PDF als positional Argument
 - [x] `--lang`
 - [x] `--dpi`
-- [ ] `--quality`
-- [ ] `-o / --output`
-- [ ] `--quiet`
-- [ ] `--version`
+- [x] `--quality`
+- [x] `-o / --output`
+- [x] `--quiet`
+- [x] `--version`
 
 ### 11. DPI-Presets implementieren
 
-- [ ] `fast -> 200`
-- [ ] `balanced -> 250`
-- [ ] `quality -> 300`
-- [ ] Konflikt zwischen `--quality` und `--dpi` sauber behandeln
-- [ ] Standardmodus festlegen
+- [x] `fast -> 200`
+- [x] `balanced -> 250`
+- [x] `quality -> 300`
+- [x] Konflikt zwischen `--quality` und `--dpi` sauber behandeln
+- [x] Standardmodus festlegen: `quality` / 300 DPI
 
 ### 12. Page-Range-Parser implementieren
 

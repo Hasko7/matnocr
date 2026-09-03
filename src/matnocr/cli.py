@@ -1,12 +1,13 @@
 """Typer command-line interface for MatnOCR."""
 
 import asyncio
+from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
-from .config import DEFAULT_DPI, DEFAULT_LANGUAGE, DPI_CHOICES
+from .config import DEFAULT_LANGUAGE, QualityPreset, resolve_dpi
 from .engine import OcrPageResult, OcrRunResult, recognize_pdf
 from .languages import is_rtl, resolve_language
 from .output import write_text_output
@@ -14,6 +15,14 @@ from .pages import PageRangeError, validate_page_selection
 from .renderer import get_pdf_page_count
 
 app = typer.Typer(add_completion=False)
+
+
+def version_callback(value: bool) -> None:
+    """Print the installed package version without requiring a PDF argument."""
+
+    if value:
+        typer.echo(version("matnocr"))
+        raise typer.Exit
 
 
 def print_page_progress(page: OcrPageResult) -> None:
@@ -61,14 +70,48 @@ def main(
         ),
     ],
     lang: Annotated[str, typer.Option("--lang")] = DEFAULT_LANGUAGE,
-    dpi: Annotated[int, typer.Option("--dpi")] = DEFAULT_DPI,
+    dpi: Annotated[
+        int | None,
+        typer.Option("--dpi", help="OCR resolution: 200, 250, or 300 DPI."),
+    ] = None,
+    quality: Annotated[
+        QualityPreset | None,
+        typer.Option(
+            "--quality",
+            case_sensitive=False,
+            help="Quality preset: fast, balanced, or quality (default).",
+        ),
+    ] = None,
     pages: Annotated[
         str | None,
         typer.Option("--pages", help="Pages to OCR, for example: 1,5,20-35"),
     ] = None,
+    output: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output",
+            dir_okay=False,
+            resolve_path=True,
+            help="Write OCR text to this file.",
+        ),
+    ] = None,
+    quiet: Annotated[
+        bool,
+        typer.Option("--quiet", help="Suppress progress and summary output."),
+    ] = False,
     show_page_count: Annotated[
         bool,
         typer.Option("--page-count", help="Print the PDF page count and exit."),
+    ] = False,
+    show_version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            callback=version_callback,
+            is_eager=True,
+            help="Show the MatnOCR version and exit.",
+        ),
     ] = False,
 ) -> None:
     """Recognize a scanned PDF with Windows OCR."""
@@ -84,8 +127,14 @@ def main(
         typer.echo(get_pdf_page_count(pdf_path))
         return
 
-    if dpi not in DPI_CHOICES:
-        raise typer.BadParameter("DPI must be 200, 250, or 300.", param_hint="--dpi")
+    try:
+        resolved_dpi = resolve_dpi(dpi, quality)
+    except ValueError as error:
+        raise typer.BadParameter(
+            str(error),
+            param_hint="--dpi/--quality",
+        ) from error
+
     if pages is not None:
         try:
             validate_page_selection(pages)
@@ -94,28 +143,30 @@ def main(
 
     language_tag = resolve_language(lang)
 
-    print()
-    print("MatnOCR PDFium DPI test")
-    print("-----------------------")
-    print(f"PDF:       {pdf_path}")
-    print(f"Language:  {language_tag}")
-    print(f"DPI:       {dpi}")
-    print(f"Direction: {'RTL' if is_rtl(language_tag) else 'LTR'}")
-    print("Pipeline:  Direct RAM")
-    print()
+    if not quiet:
+        print()
+        print("MatnOCR PDFium DPI test")
+        print("-----------------------")
+        print(f"PDF:       {pdf_path}")
+        print(f"Language:  {language_tag}")
+        print(f"DPI:       {resolved_dpi}")
+        print(f"Direction: {'RTL' if is_rtl(language_tag) else 'LTR'}")
+        print("Pipeline:  Direct RAM")
+        print()
 
     try:
         result = asyncio.run(
             recognize_pdf(
                 pdf_path,
                 language_tag,
-                dpi,
+                resolved_dpi,
                 page_selection=pages,
-                on_page=print_page_progress,
+                on_page=None if quiet else print_page_progress,
             )
         )
     except PageRangeError as error:
         raise typer.BadParameter(str(error), param_hint="--pages") from error
 
-    output_path = write_text_output(result)
-    print_summary(result, output_path)
+    output_path = write_text_output(result, output)
+    if not quiet:
+        print_summary(result, output_path)
