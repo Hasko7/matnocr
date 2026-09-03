@@ -1,0 +1,1 @@
+"""MatnOCR application configuration."""

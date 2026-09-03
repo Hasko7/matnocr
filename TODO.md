@@ -114,27 +114,27 @@ license-files = ["LICENSE"]
 
 ### 5. uv-Projekt initialisieren
 
-- [ ] `uv init --app`
-- [ ] Python-Minimum festlegen, zunächst `>=3.11`
-- [ ] `src/`-Layout verwenden
-- [ ] `uv.lock` erzeugen
-- [ ] `uv_build` als Build-Backend prüfen / konfigurieren
-- [ ] Runtime Dependencies eintragen
-- [ ] Dev Dependencies eintragen
+- [x] `uv init --app`
+- [x] Python-Minimum festlegen, zunächst `>=3.11`
+- [x] `src/`-Layout verwenden
+- [x] `uv.lock` erzeugen
+- [x] `uv_build` als Build-Backend prüfen / konfigurieren
+- [x] Runtime Dependencies eintragen
+- [x] Dev Dependencies eintragen
 
 ### 6. Geplante Paketstruktur anlegen
 
-- [ ] `src/matnocr/__init__.py`
-- [ ] `src/matnocr/__main__.py`
-- [ ] `src/matnocr/cli.py`
-- [ ] `src/matnocr/engine.py`
-- [ ] `src/matnocr/renderer.py`
-- [ ] `src/matnocr/languages.py`
-- [ ] `src/matnocr/pages.py`
-- [ ] `src/matnocr/rtl.py`
-- [ ] `src/matnocr/output.py`
-- [ ] `src/matnocr/config.py`
-- [ ] `src/matnocr/ui.py`
+- [x] `src/matnocr/__init__.py`
+- [x] `src/matnocr/__main__.py`
+- [x] `src/matnocr/cli.py`
+- [x] `src/matnocr/engine.py`
+- [x] `src/matnocr/renderer.py`
+- [x] `src/matnocr/languages.py`
+- [x] `src/matnocr/pages.py`
+- [x] `src/matnocr/rtl.py`
+- [x] `src/matnocr/output.py`
+- [x] `src/matnocr/config.py`
+- [x] `src/matnocr/ui.py`
 
 ### 7. Aktuellen OCR-Prototyp modularisieren
 
