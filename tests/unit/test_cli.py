@@ -40,6 +40,22 @@ def test_help_is_available() -> None:
     assert "--output" in ocr_help.stdout
     assert "--quiet" in ocr_help.stdout
     assert "--no-layout" in ocr_help.stdout
+    assert "Input" in ocr_help.stdout
+    assert "Recognition" in ocr_help.stdout
+    assert "Output" in ocr_help.stdout
+    assert "Examples" in ocr_help.stdout
+    assert "matnocr book.pdf --lang ar-SA" in ocr_help.stdout
+
+
+def test_help_has_no_ansi_escape_sequences_in_ci(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CI", "true")
+
+    result = runner.invoke(app, ["--help"], color=True)
+
+    assert result.exit_code == 0
+    assert "\x1b[" not in result.stdout
 
 
 def test_root_help_shows_current_default_language(
@@ -389,3 +405,41 @@ def test_doctor_command_reports_success(monkeypatch: pytest.MonkeyPatch) -> None
     assert "MatnOCR system check" in result.stdout
     assert "Windows.Media.Ocr" in result.stdout
     assert "Ready" in result.stdout
+
+
+def test_output_write_failure_is_a_clean_stderr_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    existing_file = Path(__file__).resolve().parents[2] / "prototype.py"
+    monkeypatch.setattr(cli, "resolve_language", lambda _language: "ar-SA")
+
+    async def fake_recognize_pdf(
+        pdf_path: Path,
+        language_tag: str,
+        dpi: int,
+        **_kwargs: object,
+    ) -> OcrRunResult:
+        return OcrRunResult(
+            pdf_path=pdf_path,
+            language_tag=language_tag,
+            dpi=dpi,
+            pages=(),
+            total_seconds=0.0,
+            total_bitmap_seconds=0.0,
+            total_ocr_seconds=0.0,
+            original_pages=0,
+            rendered_pages=0,
+        )
+
+    def fail_to_write(_result: OcrRunResult, _destination: Path | None) -> Path:
+        raise PermissionError("access denied")
+
+    monkeypatch.setattr(cli, "recognize_pdf", fake_recognize_pdf)
+    monkeypatch.setattr(cli, "write_text_output", fail_to_write)
+
+    result = runner.invoke(app, [str(existing_file), "--quiet"])
+
+    assert result.exit_code == 1
+    assert result.stdout == ""
+    assert "Error: Could not write the OCR output: access denied" in result.stderr
+    assert "Traceback" not in result.stderr

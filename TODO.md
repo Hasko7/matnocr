@@ -156,10 +156,10 @@ license-files = ["LICENSE"]
 - [x] Typer hinzufügen
 - [x] Rich hinzufügen
 - [x] Haupt-App erstellen
-- [ ] schöne `--help`-Ausgabe gestalten
-- [ ] Farb- und Panel-Design festlegen
-- [ ] einheitliche Fehlermeldungen definieren
-- [ ] Terminal ohne ANSI / CI berücksichtigen
+- [x] schöne `--help`-Ausgabe gestalten
+- [x] Farb- und Panel-Design festlegen
+- [x] einheitliche Fehlermeldungen definieren
+- [x] Terminal ohne ANSI / CI berücksichtigen
 
 ### 9. Console Entry Point einrichten
 

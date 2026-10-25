@@ -39,9 +39,27 @@ from .ui import (
     OcrProgress,
     print_completion_summary,
     print_doctor_table,
+    print_error,
     print_language_capabilities_table,
     print_languages_table,
+    print_ocr_configuration,
+    print_success,
+    terminal_supports_color,
 )
+
+OCR_EPILOG = """[bold]Examples[/bold]
+
+  matnocr book.pdf
+  matnocr ocr book.pdf --pages 1-10 --quality fast
+  matnocr book.pdf --lang ar-SA --dpi 300 -o book.txt
+"""
+
+LANGUAGES_EPILOG = """[bold]Examples[/bold]
+
+  matnocr languages available
+  matnocr languages install fr-FR
+  matnocr languages default ar-SA
+"""
 
 
 class DefaultOcrGroup(TyperGroup):
@@ -68,7 +86,9 @@ class DefaultOcrGroup(TyperGroup):
         """Add the current default OCR language to the root help text."""
 
         original_help = self.help
+        original_color = ctx.color
         try:
+            ctx.color = terminal_supports_color(sys.stdout)
             default_installed = False
             try:
                 configured = load_default_language()
@@ -106,20 +126,26 @@ class DefaultOcrGroup(TyperGroup):
             super().format_help(ctx, formatter)
         finally:
             self.help = original_help
+            ctx.color = original_color
 
 
 app = typer.Typer(
     cls=DefaultOcrGroup,
     add_completion=False,
     no_args_is_help=True,
+    context_settings={"help_option_names": ["-h", "--help"]},
     help=(
         "Fast local OCR for scanned Arabic PDFs, with support for many other languages."
     ),
+    rich_markup_mode="rich",
 )
 languages_app = typer.Typer(
     invoke_without_command=True,
     no_args_is_help=False,
+    context_settings={"help_option_names": ["-h", "--help"]},
+    epilog=LANGUAGES_EPILOG,
     help="List and manage Windows OCR languages.",
+    rich_markup_mode="rich",
 )
 app.add_typer(languages_app, name="languages")
 
@@ -158,7 +184,7 @@ def app_callback(
     configure_utf8_output()
 
 
-@app.command("ocr")
+@app.command("ocr", epilog=OCR_EPILOG)
 def main(
     pdf: Annotated[
         Path,
@@ -167,15 +193,27 @@ def main(
             file_okay=True,
             dir_okay=False,
             readable=True,
+            help="Scanned PDF to recognize.",
+            rich_help_panel="Input",
         ),
     ],
     lang: Annotated[
         str | None,
-        typer.Option("--lang", help="Installed Windows OCR language."),
+        typer.Option(
+            "--lang",
+            help="Installed OCR language code, for example ar-SA.",
+            metavar="CODE",
+            rich_help_panel="Recognition",
+        ),
     ] = None,
     dpi: Annotated[
         int | None,
-        typer.Option("--dpi", help="OCR resolution: 200, 250, or 300 DPI."),
+        typer.Option(
+            "--dpi",
+            help="OCR resolution: 200, 250, or 300 DPI.",
+            metavar="DPI",
+            rich_help_panel="Recognition",
+        ),
     ] = None,
     quality: Annotated[
         QualityPreset | None,
@@ -183,11 +221,17 @@ def main(
             "--quality",
             case_sensitive=False,
             help="Quality preset: fast, balanced, or quality (default).",
+            rich_help_panel="Recognition",
         ),
     ] = None,
     pages: Annotated[
         str | None,
-        typer.Option("--pages", help="Pages to OCR, for example: 1,5,20-35"),
+        typer.Option(
+            "--pages",
+            help="Pages to OCR, for example: 1,5,20-35.",
+            metavar="RANGE",
+            rich_help_panel="Recognition",
+        ),
     ] = None,
     output: Annotated[
         Path | None,
@@ -197,22 +241,33 @@ def main(
             dir_okay=False,
             resolve_path=True,
             help="Write OCR text to this file.",
+            metavar="FILE",
+            rich_help_panel="Output",
         ),
     ] = None,
     quiet: Annotated[
         bool,
-        typer.Option("--quiet", help="Suppress progress and summary output."),
+        typer.Option(
+            "--quiet",
+            help="Suppress progress and summary output.",
+            rich_help_panel="Output",
+        ),
     ] = False,
     no_layout: Annotated[
         bool,
         typer.Option(
             "--no-layout",
             help="Ignore line and paragraph layout; join text continuously.",
+            rich_help_panel="Recognition",
         ),
     ] = False,
     show_page_count: Annotated[
         bool,
-        typer.Option("--page-count", help="Print the PDF page count and exit."),
+        typer.Option(
+            "--page-count",
+            help="Print the PDF page count and exit.",
+            rich_help_panel="Output",
+        ),
     ] = False,
 ) -> None:
     """Convert a scanned PDF into text."""
@@ -225,7 +280,12 @@ def main(
                 "--page-count cannot be combined with --pages.",
                 param_hint="--page-count",
             )
-        typer.echo(get_pdf_page_count(pdf_path))
+        try:
+            page_count = get_pdf_page_count(pdf_path)
+        except (OSError, RuntimeError, ValueError) as error:
+            print_error(error)
+            raise typer.Exit(code=1) from error
+        typer.echo(page_count)
         return
 
     try:
@@ -252,15 +312,12 @@ def main(
         ) from error
 
     if not quiet:
-        print()
-        print("MatnOCR PDFium DPI test")
-        print("-----------------------")
-        print(f"PDF:       {pdf_path}")
-        print(f"Language:  {language_tag}")
-        print(f"DPI:       {resolved_dpi}")
-        print(f"Direction: {'RTL' if is_rtl(language_tag) else 'LTR'}")
-        print("Pipeline:  Direct RAM")
-        print()
+        print_ocr_configuration(
+            pdf_path,
+            language_tag,
+            resolved_dpi,
+            "RTL" if is_rtl(language_tag) else "LTR",
+        )
 
     try:
         with OcrProgress(enabled=not quiet) as progress:
@@ -277,8 +334,15 @@ def main(
             )
     except PageRangeError as error:
         raise typer.BadParameter(str(error), param_hint="--pages") from error
+    except (OSError, RuntimeError, ValueError) as error:
+        print_error(error)
+        raise typer.Exit(code=1) from error
 
-    output_path = write_text_output(result, output)
+    try:
+        output_path = write_text_output(result, output)
+    except OSError as error:
+        print_error(f"Could not write the OCR output: {error}")
+        raise typer.Exit(code=1) from error
     if not quiet:
         print_completion_summary(result, output_path)
 
@@ -293,7 +357,7 @@ def languages_command(ctx: typer.Context) -> None:
     try:
         default_language = load_default_language()
     except SettingsError as error:
-        typer.echo(f"Error: {error}", err=True)
+        print_error(error)
         raise typer.Exit(code=1) from error
 
     print_languages_table(get_available_languages(), default_language)
@@ -312,10 +376,10 @@ def set_default_language_command(
         language_tag = resolve_language(language)
         settings_path = save_default_language(language_tag)
     except (LanguageNotInstalledError, SettingsError) as error:
-        typer.echo(f"✗ {error}", err=True)
+        print_error(error)
         raise typer.Exit(code=1) from error
 
-    typer.echo(f"✓ Default OCR language: {language_tag}")
+    print_success(f"Default OCR language: {language_tag}")
     typer.echo(f"Saved in: {settings_path}")
 
 
@@ -329,7 +393,7 @@ def available_languages_command() -> None:
     try:
         result = get_language_capabilities()
     except LanguageCapabilityError as error:
-        typer.echo(f"✗ {error}", err=True)
+        print_error(error)
         raise typer.Exit(code=1) from error
 
     print_language_capabilities_table(result.capabilities)
@@ -355,11 +419,11 @@ def _manage_language_command(action: CapabilityAction, language: str) -> None:
         )
         result = manage_language_capability(action, language_tag)
     except (LanguageCapabilityError, SettingsError) as error:
-        typer.echo(f"✗ {error}", err=True)
+        print_error(error)
         raise typer.Exit(code=1) from error
 
     verb = "installed" if result.action == "install" else "removed"
-    typer.echo(f"✓ OCR language {result.language_tag} {verb}.")
+    print_success(f"OCR language {result.language_tag} {verb}.")
     typer.echo("Run 'matnocr languages' to refresh the installed language list.")
 
 

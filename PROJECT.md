@@ -324,6 +324,17 @@ Rich soll übernehmen:
 - Erfolgs- und Fehlermeldungen
 - saubere Zusammenfassungen
 
+Das CLI-Design ist für Version 0.1 einheitlich festgelegt:
+
+- Cyan kennzeichnet Überschriften und zentrale Werte.
+- Grün kennzeichnet erfolgreiche Aktionen.
+- Gelb ist für Warnungen und Rot für Fehler reserviert.
+- Die OCR-Konfiguration erscheint in interaktiven Terminals als kompaktes Panel.
+- Die Hilfe gruppiert Eingabe, Erkennung und Ausgabe und enthält direkt nutzbare Beispiele.
+- Benutzerfehler verwenden das einheitliche Format `Error: <Nachricht>` und gehen an `stderr`.
+- In CI, bei umgeleiteter Ausgabe, mit `NO_COLOR` oder bei `TERM=dumb` werden ANSI-Farben deaktiviert.
+- Fortschrittsanimationen laufen nur in einem interaktiven Terminal; `--quiet` unterdrückt sie vollständig.
+
 ### Geplanter Standardaufruf
 
 ```powershell
