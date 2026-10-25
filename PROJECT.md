@@ -407,9 +407,33 @@ gespeichert:
 matnocr languages default ar-SA
 ```
 
-MatnOCR zeigt nur die von Windows OCR bereitgestellten Sprachen an und verändert
-keine Windows-Sprachpakete. Installation und Entfernung bleiben bewusst bei den
-Windows-Einstellungen beziehungsweise einer administrativen PowerShell.
+Die Sprachenübersicht zeigt die aktuell gewählte Standardsprache ausdrücklich
+an. Windows-OCR-Sprachpakete können außerdem verwaltet werden:
+
+Auch der Haupt-Hilfetext von `matnocr` zeigt die aktuell konfigurierte
+Standardsprache mit ihrem lokalisierten Namen und dem technischen Sprachcode
+direkt unter der Projektbeschreibung an. Ist Arabisch nicht installiert, zeigt
+die Hilfe den passenden Installationsbefehl.
+
+```powershell
+matnocr languages available
+matnocr languages install fr-FR
+matnocr languages remove fr-FR
+```
+
+`languages available` liest die vollständige Liste dynamisch über
+`Get-WindowsCapability` aus und zeigt pro Sprachcode `Installed` oder
+`Not installed`. Der lesbare Sprachname wird über
+`Windows.Globalization.Language` in der Windows-Anzeigesprache des Nutzers
+ermittelt. Dadurch muss MatnOCR weder Capability-Codes noch Übersetzungen als
+feste Liste führen.
+
+Installation und Entfernung verwenden die Windows-Capabilities
+`Language.OCR~~~<tag>~0.0.1.0`. Läuft MatnOCR nicht erhöht, öffnet es über die
+Windows-UAC-Abfrage eine administrative Windows PowerShell. Nach der Operation
+wird der tatsächliche Capability-Status erneut geprüft. Die aktive
+MatnOCR-Standardsprache kann nicht entfernt werden, bevor eine andere
+Standardsprache gewählt wurde.
 
 ### Systemdiagnose
 

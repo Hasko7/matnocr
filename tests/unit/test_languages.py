@@ -49,3 +49,16 @@ def test_rtl_languages(tag: str) -> None:
 
 def test_ltr_language() -> None:
     assert not languages.is_rtl("de-DE")
+
+
+def test_language_display_name_comes_from_windows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeWindowsLanguage:
+        def __init__(self, language_tag: str) -> None:
+            assert language_tag == "ar-SA"
+            self.display_name = "Arabic (Saudi Arabia)"
+
+    monkeypatch.setattr(languages, "Language", FakeWindowsLanguage)
+
+    assert languages.get_language_display_name("ar-SA") == ("Arabic (Saudi Arabia)")

@@ -8,6 +8,11 @@ from matnocr import cli
 from matnocr.cli import app
 from matnocr.doctor import DiagnosticCheck
 from matnocr.engine import OcrRunResult
+from matnocr.language_capabilities import (
+    CapabilityCatalogResult,
+    LanguageCapabilityResult,
+    OcrCapability,
+)
 from matnocr.languages import LanguageNotInstalledError, OcrLanguage
 
 runner = CliRunner()
@@ -17,7 +22,9 @@ def test_help_is_available() -> None:
     result = runner.invoke(app, ["--help"])
 
     assert result.exit_code == 0
-    assert "Fast local PDF OCR powered by Windows." in result.stdout
+    assert "Fast local OCR for scanned Arabic PDFs" in result.stdout
+    assert "support for many other" in result.stdout
+    assert "languages." in result.stdout
     assert "ocr" in result.stdout
     assert "languages" in result.stdout
     assert "doctor" in result.stdout
@@ -26,13 +33,78 @@ def test_help_is_available() -> None:
     ocr_help = runner.invoke(app, ["ocr", "--help"])
 
     assert ocr_help.exit_code == 0
-    assert "Recognize a scanned PDF with Windows OCR." in ocr_help.stdout
+    assert "Convert a scanned PDF into text." in ocr_help.stdout
     assert "--lang" in ocr_help.stdout
     assert "--dpi" in ocr_help.stdout
     assert "--quality" in ocr_help.stdout
     assert "--output" in ocr_help.stdout
     assert "--quiet" in ocr_help.stdout
     assert "--no-layout" in ocr_help.stdout
+
+
+def test_root_help_shows_current_default_language(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(cli, "load_default_language", lambda: "ar")
+    monkeypatch.setattr(cli, "resolve_language", lambda _tag: "ar-SA")
+    monkeypatch.setattr(
+        cli,
+        "get_language_display_name",
+        lambda _tag: "Arabic (Saudi Arabia)",
+    )
+
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == 0
+    assert "Default OCR language: Arabic (Saudi Arabia) (ar-SA)" in result.stdout
+    assert "Install Arabic OCR" not in result.stdout
+    assert "Set Arabic as default" not in result.stdout
+
+
+def test_root_help_suggests_installing_arabic_when_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(cli, "load_default_language", lambda: "de-DE")
+
+    def resolve_test_language(tag: str) -> str:
+        if tag == "ar":
+            raise LanguageNotInstalledError("Arabic is not installed")
+        return "de-DE"
+
+    monkeypatch.setattr(cli, "resolve_language", resolve_test_language)
+    monkeypatch.setattr(
+        cli,
+        "get_language_display_name",
+        lambda _tag: "German (Germany)",
+    )
+
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == 0
+    assert "Default OCR language: German (Germany) (de-DE)" in result.stdout
+    assert "matnocr languages install ar-SA" in result.stdout
+
+
+def test_root_help_does_not_suggest_selecting_installed_arabic(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(cli, "load_default_language", lambda: "de-DE")
+    monkeypatch.setattr(
+        cli,
+        "resolve_language",
+        lambda tag: "ar-SA" if tag == "ar" else "de-DE",
+    )
+    monkeypatch.setattr(
+        cli,
+        "get_language_display_name",
+        lambda _tag: "German (Germany)",
+    )
+
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == 0
+    assert "Set Arabic as default" not in result.stdout
+    assert "matnocr languages default ar-SA" not in result.stdout
 
 
 def test_pdf_argument_must_exist() -> None:
@@ -193,6 +265,7 @@ def test_languages_command_shows_installed_languages(
     assert "ar-SA" in result.stdout
     assert "Arabic (Saudi Arabia)" in result.stdout
     assert "Default" in result.stdout
+    assert "Default OCR language: ar-SA" in result.stdout
     assert "de-DE" in result.stdout
 
 
@@ -227,6 +300,80 @@ def test_default_language_command(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.exit_code == 0
     assert "Default OCR language: en-US" in result.stdout
     assert str(settings_path) in result.stdout
+
+
+def test_install_language_command_opens_administrator_operation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        cli,
+        "manage_language_capability",
+        lambda action, tag: LanguageCapabilityResult(tag, action, True),
+    )
+
+    result = runner.invoke(app, ["languages", "install", "fr-FR"])
+
+    assert result.exit_code == 0
+    assert "Administrator permission is required" in result.stdout
+    assert "OCR language fr-FR installed" in result.stdout
+
+
+def test_available_languages_command_shows_installation_states(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        cli,
+        "get_language_capabilities",
+        lambda: CapabilityCatalogResult(
+            (
+                OcrCapability("ar-SA", "Installed", "Arabic (Saudi Arabia)"),
+                OcrCapability("fr-FR", "NotPresent", "French (France)"),
+            ),
+            True,
+        ),
+    )
+
+    result = runner.invoke(app, ["languages", "available"])
+
+    assert result.exit_code == 0
+    assert "Available Windows OCR" in result.stdout
+    assert "language capabilities" in result.stdout
+    assert "ar-SA" in result.stdout
+    assert "Arabic (Saudi Arabia)" in result.stdout
+    assert "Installed" in result.stdout
+    assert "fr-FR" in result.stdout
+    assert "French (France)" in result.stdout
+    assert "Not installed" in result.stdout
+    assert "matnocr languages install" in result.stdout
+    assert "<code>" in result.stdout
+
+
+def test_install_language_requires_a_code_from_available_list() -> None:
+    result = runner.invoke(app, ["languages", "install", "fr"])
+
+    assert result.exit_code == 1
+    assert "complete language code" in result.stderr
+    assert "matnocr languages available" in result.stderr
+    assert "matnocr languages install <code>" in result.stderr
+
+
+def test_remove_default_language_is_rejected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    called = False
+    monkeypatch.setattr(cli, "load_default_language", lambda: "fr-FR")
+
+    def fake_manage(_action: str, _tag: str) -> None:
+        nonlocal called
+        called = True
+
+    monkeypatch.setattr(cli, "manage_language_capability", fake_manage)
+
+    result = runner.invoke(app, ["languages", "remove", "fr-FR"])
+
+    assert result.exit_code == 1
+    assert "Cannot remove the default OCR language fr-FR" in result.stderr
+    assert not called
 
 
 def test_doctor_command_reports_success(monkeypatch: pytest.MonkeyPatch) -> None:

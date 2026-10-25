@@ -13,9 +13,17 @@ from typer.core import TyperGroup
 from .config import QualityPreset, resolve_dpi
 from .doctor import run_doctor_checks
 from .engine import recognize_pdf
+from .language_capabilities import (
+    CapabilityAction,
+    LanguageCapabilityError,
+    get_language_capabilities,
+    manage_language_capability,
+    normalize_capability_language_tag,
+)
 from .languages import (
     LanguageNotInstalledError,
     get_available_languages,
+    get_language_display_name,
     is_rtl,
     resolve_language,
 )
@@ -31,6 +39,7 @@ from .ui import (
     OcrProgress,
     print_completion_summary,
     print_doctor_table,
+    print_language_capabilities_table,
     print_languages_table,
 )
 
@@ -51,12 +60,61 @@ class DefaultOcrGroup(TyperGroup):
             args.insert(0, "ocr")
         return super().parse_args(ctx, args)
 
+    def format_help(
+        self,
+        ctx: _click.Context,
+        formatter: _click.HelpFormatter,
+    ) -> None:
+        """Add the current default OCR language to the root help text."""
+
+        original_help = self.help
+        try:
+            default_installed = False
+            try:
+                configured = load_default_language()
+                try:
+                    language_tag = resolve_language(configured)
+                    language_name = get_language_display_name(language_tag)
+                    default_language = f"{language_name} ({language_tag})"
+                    default_installed = True
+                except LanguageNotInstalledError:
+                    language_tag = configured
+                    default_language = f"{configured} (not installed)"
+            except SettingsError:
+                language_tag = ""
+                default_language = "unavailable"
+
+            hint = ""
+            default_is_arabic = language_tag.lower().split("-")[0] == "ar"
+            if default_is_arabic and not default_installed:
+                hint = (
+                    "\n\nHint: Install Arabic OCR with: matnocr languages install ar-SA"
+                )
+            elif not default_is_arabic:
+                try:
+                    resolve_language("ar")
+                except LanguageNotInstalledError:
+                    hint = (
+                        "\n\nHint: Install Arabic OCR with: "
+                        "matnocr languages install ar-SA"
+                    )
+
+            description = original_help or ""
+            self.help = (
+                f"{description}\n\nDefault OCR language: {default_language}{hint}"
+            )
+            super().format_help(ctx, formatter)
+        finally:
+            self.help = original_help
+
 
 app = typer.Typer(
     cls=DefaultOcrGroup,
     add_completion=False,
     no_args_is_help=True,
-    help="Fast local PDF OCR powered by Windows.",
+    help=(
+        "Fast local OCR for scanned Arabic PDFs, with support for many other languages."
+    ),
 )
 languages_app = typer.Typer(
     invoke_without_command=True,
@@ -157,7 +215,7 @@ def main(
         typer.Option("--page-count", help="Print the PDF page count and exit."),
     ] = False,
 ) -> None:
-    """Recognize a scanned PDF with Windows OCR."""
+    """Convert a scanned PDF into text."""
 
     pdf_path = pdf.resolve()
 
@@ -259,6 +317,74 @@ def set_default_language_command(
 
     typer.echo(f"✓ Default OCR language: {language_tag}")
     typer.echo(f"Saved in: {settings_path}")
+
+
+@languages_app.command("available")
+def available_languages_command() -> None:
+    """Show every Windows OCR language capability and its installation state."""
+
+    typer.echo(
+        "Reading Windows OCR capabilities. Administrator permission may be requested."
+    )
+    try:
+        result = get_language_capabilities()
+    except LanguageCapabilityError as error:
+        typer.echo(f"✗ {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    print_language_capabilities_table(result.capabilities)
+
+
+def _manage_language_command(action: CapabilityAction, language: str) -> None:
+    try:
+        language_tag = normalize_capability_language_tag(language)
+        if action == "remove":
+            default_language = load_default_language().lower()
+            requested = language_tag.lower()
+            if requested == default_language or requested.startswith(
+                default_language + "-"
+            ):
+                raise LanguageCapabilityError(
+                    f"Cannot remove the default OCR language {language_tag}. "
+                    "Set another default language first."
+                )
+
+        typer.echo(
+            "Administrator permission is required. "
+            "Approve the Windows UAC prompt to continue."
+        )
+        result = manage_language_capability(action, language_tag)
+    except (LanguageCapabilityError, SettingsError) as error:
+        typer.echo(f"✗ {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    verb = "installed" if result.action == "install" else "removed"
+    typer.echo(f"✓ OCR language {result.language_tag} {verb}.")
+    typer.echo("Run 'matnocr languages' to refresh the installed language list.")
+
+
+@languages_app.command("install")
+def install_language_command(
+    language: Annotated[
+        str,
+        typer.Argument(help="Complete OCR language tag, for example fr-FR."),
+    ],
+) -> None:
+    """Install a Windows OCR language capability with administrator rights."""
+
+    _manage_language_command("install", language)
+
+
+@languages_app.command("remove")
+def remove_language_command(
+    language: Annotated[
+        str,
+        typer.Argument(help="Complete OCR language tag, for example fr-FR."),
+    ],
+) -> None:
+    """Remove a Windows OCR language capability with administrator rights."""
+
+    _manage_language_command("remove", language)
 
 
 @app.command("doctor")

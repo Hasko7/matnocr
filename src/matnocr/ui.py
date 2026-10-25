@@ -21,6 +21,7 @@ from rich.text import Text
 
 from .doctor import DiagnosticCheck
 from .engine import OcrPageResult, OcrRunResult
+from .language_capabilities import OcrCapability
 from .languages import OcrLanguage
 
 
@@ -116,13 +117,23 @@ def print_languages_table(
     """Display installed Windows OCR languages and the active default."""
 
     output = console or Console(highlight=False)
+    default_normalized = default_language.lower()
+    default_display = next(
+        (
+            language.language_tag
+            for language in languages
+            if language.language_tag.lower() == default_normalized
+            or language.language_tag.lower().startswith(default_normalized + "-")
+        ),
+        f"{default_language} (not installed)",
+    )
+    output.print("Default OCR language:", default_display)
     table = Table(title="Installed Windows OCR languages")
     table.add_column("Status")
     table.add_column("Code", style="cyan")
     table.add_column("Name")
     table.add_column("Native name")
 
-    default_normalized = default_language.lower()
     for language in languages:
         tag_normalized = language.language_tag.lower()
         is_default = tag_normalized == default_normalized or tag_normalized.startswith(
@@ -139,6 +150,37 @@ def print_languages_table(
     output.print(table)
     if not languages:
         output.print("[red]✗ No Windows OCR languages are installed.[/red]")
+
+
+def print_language_capabilities_table(
+    capabilities: Sequence[OcrCapability],
+    *,
+    console: Console | None = None,
+) -> None:
+    """Display all Windows OCR capabilities and their installation state."""
+
+    output = console or Console(highlight=False)
+    table = Table(title="Available Windows OCR language capabilities")
+    table.add_column("Code", style="cyan")
+    table.add_column("Language")
+    table.add_column("Status")
+
+    for capability in capabilities:
+        installed = capability.state.lower() == "installed"
+        status = "[green]✓ Installed[/green]" if installed else "Not installed"
+        table.add_row(
+            capability.language_tag,
+            capability.display_name or capability.language_tag,
+            status,
+        )
+
+    output.print(table)
+    if not capabilities:
+        output.print("[red]✗ Windows returned no OCR language capabilities.[/red]")
+    else:
+        output.print(
+            "[dim]Hint: Use a code above: matnocr languages install <code>[/dim]"
+        )
 
 
 def print_doctor_table(

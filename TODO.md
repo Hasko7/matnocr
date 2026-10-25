@@ -214,9 +214,12 @@ Unterstützen:
 - [x] aktive / verfügbare Sprachen als Rich-Tabelle darstellen
 - [x] fehlende Sprache bei OCR-Aufruf verständlich melden
 - [x] persistente Standardsprache mit `languages default <code>` setzen
-- [x] Sprachpaketverwaltung bewusst Windows / PowerShell überlassen
-- [ ] Sprachen entfernen und herunterladen (administrator powershell auffordern zu öffnen wenn es nicht geöffnet ist weil damit kann man nur herunterladen und löschen)
-- [ ] derzeit als default gewählt sprache mit output direkt anzeigen wenn matocr gestartet wird 
+- [x] Sprachpaketverwaltung über administrative Windows PowerShell integrieren
+- [x] Sprachen mit `languages install <code>` installieren und mit `languages remove <code>` entfernen
+- [x] alle verfügbaren Windows-OCR-Capabilities mit `languages available` dynamisch anzeigen
+- [x] administrative PowerShell über Windows UAC öffnen, wenn MatnOCR nicht erhöht läuft
+- [x] aktuell gewählte Standardsprache bei `matnocr languages` direkt anzeigen
+- [x] Standardsprache im Haupt-Hilfetext von `matnocr` direkt anzeigen
 
 ### 14. `doctor` Command
 

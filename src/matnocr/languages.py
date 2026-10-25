@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Final
 
+from winrt.windows.globalization import Language
 from winrt.windows.media.ocr import OcrEngine
 
 RTL_LANGUAGES: Final = frozenset({"ar", "fa", "ur", "he"})
@@ -61,3 +62,9 @@ def is_rtl(language_tag: str) -> bool:
     """Return whether a Windows language tag uses right-to-left word order."""
 
     return language_tag.lower().split("-")[0] in RTL_LANGUAGES
+
+
+def get_language_display_name(language_tag: str) -> str:
+    """Return the Windows-localized display name for a BCP-47 language tag."""
+
+    return Language(language_tag).display_name
