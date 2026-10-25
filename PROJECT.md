@@ -272,6 +272,13 @@ ist weder eine zweite OCR-Runde noch eine temporäre Bilddatei erforderlich. Mit
 `--no-layout` werden die erkannten Zeilen stattdessen mit Leerzeichen zu einem
 fortlaufenden Text verbunden.
 
+Stark fragmentierte OCR-Ergebnisse, wie sie bei reinen Ornament- oder
+Kachelseiten entstehen können, werden gezielt mit 125 DPI kontrolliert. Nur
+verdächtige Seiten erhalten diesen zusätzlichen Lauf. Bestätigt die
+Kontroll-OCR keinen glaubwürdigen Text im gewählten Schriftsystem, bleibt die
+Seite in der Ausgabe leer. Erkannte Wörter echter Textseiten werden dadurch
+nicht sprachlich korrigiert oder umgeschrieben.
+
 ### Beispiel
 
 Windows-interne visuelle Reihenfolge:

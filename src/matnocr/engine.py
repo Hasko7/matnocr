@@ -10,11 +10,12 @@ import pypdfium2 as pdfium
 from winrt.windows.globalization import Language
 from winrt.windows.media.ocr import OcrEngine
 
-from .config import MIN_PAGE_COVERAGE
+from .config import MIN_PAGE_COVERAGE, NON_TEXT_VALIDATION_DPI
 from .languages import is_rtl
 from .pages import resolve_page_indices
 from .renderer import RenderMode, get_ocr_bitmap
 from .rtl import reconstruct_text
+from .validation import is_suspicious_ocr_result, validation_result_supports_text
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +37,7 @@ class OcrPageResult:
     height: int
     render_mode: RenderMode
     timing: PageTiming
+    skipped_non_text: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,6 +53,8 @@ class OcrRunResult:
     total_ocr_seconds: float
     original_pages: int
     rendered_pages: int
+    non_text_validation_pages: int = 0
+    skipped_non_text_pages: int = 0
 
     @property
     def page_count(self) -> int:
@@ -96,6 +100,8 @@ async def recognize_pdf(
     total_ocr = 0.0
     original_pages = 0
     rendered_pages = 0
+    non_text_validation_pages = 0
+    skipped_non_text_pages = 0
     total_start = time.perf_counter()
 
     with pdfium.PdfDocument(pdf_path) as pdf:
@@ -131,11 +137,60 @@ async def recognize_pdf(
                     rendered.bitmap.close()
 
                 total_ocr += ocr_time
-                text = reconstruct_text(
-                    result,
-                    rtl,
-                    preserve_layout=preserve_layout,
-                )
+                skipped_non_text = False
+
+                if is_suspicious_ocr_result(result):
+                    non_text_validation_pages += 1
+                    validation_bitmap_start = time.perf_counter()
+                    validation_rendered = get_ocr_bitmap(
+                        page,
+                        NON_TEXT_VALIDATION_DPI,
+                        min_page_coverage,
+                    )
+                    validation_bitmap_time = (
+                        time.perf_counter() - validation_bitmap_start
+                    )
+                    bitmap_time += validation_bitmap_time
+                    total_bitmap += validation_bitmap_time
+
+                    if (
+                        validation_rendered.width > OcrEngine.max_image_dimension
+                        or validation_rendered.height > OcrEngine.max_image_dimension
+                    ):
+                        validation_rendered.bitmap.close()
+                        raise RuntimeError(
+                            f"Page {page_index + 1}: validation bitmap "
+                            f"{validation_rendered.width}x{validation_rendered.height} "
+                            f"exceeds Windows OCR limit "
+                            f"{OcrEngine.max_image_dimension}"
+                        )
+
+                    try:
+                        validation_ocr_start = time.perf_counter()
+                        validation_result = await recognize(
+                            engine,
+                            validation_rendered.bitmap,
+                        )
+                        validation_ocr_time = time.perf_counter() - validation_ocr_start
+                    finally:
+                        validation_rendered.bitmap.close()
+
+                    ocr_time += validation_ocr_time
+                    total_ocr += validation_ocr_time
+                    skipped_non_text = not validation_result_supports_text(
+                        validation_result,
+                        language_tag,
+                    )
+
+                if skipped_non_text:
+                    text = ""
+                    skipped_non_text_pages += 1
+                else:
+                    text = reconstruct_text(
+                        result,
+                        rtl,
+                        preserve_layout=preserve_layout,
+                    )
                 page_result = OcrPageResult(
                     page_number=page_index + 1,
                     text=text,
@@ -147,6 +202,7 @@ async def recognize_pdf(
                         ocr_seconds=ocr_time,
                         total_seconds=time.perf_counter() - page_start,
                     ),
+                    skipped_non_text=skipped_non_text,
                 )
                 pages.append(page_result)
 
@@ -170,4 +226,6 @@ async def recognize_pdf(
         total_ocr_seconds=total_ocr,
         original_pages=original_pages,
         rendered_pages=rendered_pages,
+        non_text_validation_pages=non_text_validation_pages,
+        skipped_non_text_pages=skipped_non_text_pages,
     )

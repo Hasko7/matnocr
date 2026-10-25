@@ -27,6 +27,7 @@ DEFAULT_QUALITY: Final = QualityPreset.QUALITY
 DEFAULT_DPI: Final = DPI_PRESETS[DEFAULT_QUALITY]
 DEFAULT_LANGUAGE: Final = "ar"
 MIN_PAGE_COVERAGE: Final = 0.70
+NON_TEXT_VALIDATION_DPI: Final = 125
 
 
 def resolve_dpi(dpi: int | None, quality: QualityPreset | None) -> int:

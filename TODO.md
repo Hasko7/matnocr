@@ -147,6 +147,7 @@ license-files = ["LICENSE"]
 - [x] Output-Erzeugung auslagern
 - [x] Timing-Code optional / strukturiert machen
 - [x] keine globalen Projektvariablen mehr verwenden
+- [x] verdächtige Nicht-Text-Seiten mit einer kontrollierten 125-DPI-OCR prüfen und OCR-Artefakte verwerfen
 
 ## Phase 2 – CLI v0.1 bauen
 
@@ -214,6 +215,8 @@ Unterstützen:
 - [x] fehlende Sprache bei OCR-Aufruf verständlich melden
 - [x] persistente Standardsprache mit `languages default <code>` setzen
 - [x] Sprachpaketverwaltung bewusst Windows / PowerShell überlassen
+- [ ] Sprachen entfernen und herunterladen (administrator powershell auffordern zu öffnen wenn es nicht geöffnet ist weil damit kann man nur herunterladen und löschen)
+- [ ] derzeit als default gewählt sprache mit output direkt anzeigen wenn matocr gestartet wird 
 
 ### 14. `doctor` Command
 

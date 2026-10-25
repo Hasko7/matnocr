@@ -31,3 +31,9 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+
+
+# test files
+*.txt 
+*.pdf
+
