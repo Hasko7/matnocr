@@ -37,3 +37,6 @@ Thumbs.db
 *.txt 
 *.pdf
 
+prototype.py
+add_new_white_page.py
+
