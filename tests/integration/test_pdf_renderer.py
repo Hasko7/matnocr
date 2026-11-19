@@ -1,11 +1,32 @@
 """Exercise the real renderer and bitmap copy with synthetic input."""
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 pytestmark = pytest.mark.integration
+
+
+@pytest.mark.parametrize("language", ["de", "ar"])
+def test_unicode_test_pdf_contains_a_scan_without_hidden_text(
+    pdfium: Any, scanned_pdf_factory: Callable[[str], Path], language: str
+) -> None:
+    with pdfium.PdfDocument(scanned_pdf_factory(language)) as pdf:
+        assert len(pdf) == 1
+        page = pdf[0]
+        try:
+            textpage = page.get_textpage()
+            try:
+                assert textpage.count_chars() == 0
+            finally:
+                textpage.close()
+            objects = list(page.get_objects())
+            assert len(objects) == 1
+            assert objects[0].get_px_size() == (1600, 800)
+        finally:
+            page.close()
 
 
 def test_synthetic_pdf_renders(pdfium: Any, synthetic_pdf: Path) -> None:

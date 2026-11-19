@@ -326,10 +326,15 @@ OCR  █████████████████████████
 ### 22. Eigene Test-PDFs erstellen
 
 - [x] synthetische englische PDF (zur Testlaufzeit erzeugt)
-- [ ] synthetische deutsche PDF
-- [ ] synthetische arabische PDF
-- [ ] Public-Domain-Testtext möglich
-- [ ] keine urheberrechtlich problematischen Buchseiten committen
+- [x] synthetische deutsche Scan-PDF mit Umlauten und ß (zur Testlaufzeit erzeugt)
+- [x] synthetische arabische Scan-PDF mit verbundenen Buchstaben und RTL-Prüfung (zur Testlaufzeit erzeugt)
+
+Die Testtexte sind selbst verfasst. Gemeinfreie Texte bleiben eine optionale
+Alternative, keine zusätzliche Pflichtaufgabe.
+
+Dauerhafte Regel: Keine urheberrechtlich problematischen Buchseiten oder
+privaten Benchmark-Dateien committen. Systemschriften werden nur lokal zum
+Rendern verwendet; Schriftdateien werden nicht mitgeliefert.
 
 ## Phase 4 – Dokumentation und Open Source
 

@@ -878,12 +878,20 @@ Unter `tests/integration/`, mit dem pytest-Marker `integration`:
 - Direct-RAM-Pipeline
 - installierte Sprachpakete
 
-Die Tests erzeugen eine eigene englische PDF im temporären Testverzeichnis.
+Die Tests erzeugen eigene englische, deutsche und arabische PDFs im temporären
+Testverzeichnis. Die deutschen und arabischen Seiten sind reine Scanbilder:
+Windows System.Drawing rendert selbst verfasste Texte mit der lokalen
+Arial-Schrift, einschließlich arabischer Buchstabenverbindungen und RTL.
+PDFium bettet die Bilder ohne versteckte Textebene ein. Die OCR-Prüfungen
+decken Umlaute, ß und arabische Wortreihenfolge ab.
+
 Windows-abhängige Tests überspringen fehlende Plattform-/WinRT-Capabilities;
-der echte Text-OCR-Test überspringt ein fehlendes englisches Sprachpaket.
-Sie installieren keine Systemsprachen. GitHub Windows Runner können andere
-OCR-Sprachen als das lokale System haben. Weitere synthetische deutsche und
-arabische Dokumente bleiben in der Roadmap.
+sprachabhängige OCR-Tests überspringen das jeweils fehlende Sprachpaket.
+Zur Scan-Erzeugung müssen Windows PowerShell, System.Drawing und Arial
+verfügbar sein; andernfalls werden die betroffenen Tests ebenfalls übersprungen.
+Es werden weder Systemsprachen installiert noch Schriftdateien oder private
+Buchseiten mitgeliefert. GitHub Windows Runner können andere OCR-Sprachen als
+das lokale System haben. Details stehen in `tests/integration/README.md`.
 
 ## 21. Releases
 

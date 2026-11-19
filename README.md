@@ -277,11 +277,20 @@ boundaries and in test doubles, where dynamic projection objects are passed
 through. Core configuration, page selection, and output functions remain typed.
 
 Integration tests are marked `integration` and live in `tests/integration/`.
-They generate an original English PDF at runtime and check PDFium rendering,
-SoftwareBitmap copying, and real OCR. Windows tests skip when Windows or the
-required WinRT module is unavailable; the text recognition test skips if no
-English OCR pack is installed. No language packs are installed by tests, and
-no private book pages are used. The full suite currently requires Windows
+They generate original English, German, and Arabic PDFs at runtime and check
+PDFium rendering, SoftwareBitmap copying, and real OCR. The German and Arabic
+documents contain only scan images, generated with Windows text shaping to
+preserve umlauts, eszett, and connected Arabic letters. Tests check selected
+words and their order rather than requiring identical punctuation.
+
+Windows tests skip when Windows or the required WinRT module is unavailable;
+each language-specific OCR test skips if its language pack is missing.
+Generating the Unicode scans also requires Windows PowerShell, System.Drawing,
+and the locally installed Arial font; affected tests skip if these capabilities
+are unavailable. No new package dependencies or bundled font files are needed.
+No language packs are installed by tests, and no private book pages are used.
+See [the integration test notes](tests/integration/README.md) for details.
+The full suite currently requires Windows
 because application modules imported by unit tests use WinRT. GitHub CI remains
 a later roadmap task.
 

@@ -1,10 +1,19 @@
 """Synthetic documents and capability checks for real runtime tests."""
 
+import base64
+import shutil
+import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import pytest
+
+SCANNED_TEXT = {
+    "de": "Die Schüler lesen Bücher.\nGrüße aus Köln und München.\nDie Straße ist groß.",
+    "ar": "هذا كتاب مفيد\nيقرأ الطالب الدرس\nالعلم نور والعمل خير",
+}
 
 
 @pytest.fixture
@@ -26,6 +35,76 @@ def english_ocr_language(windows_ocr: Any) -> str:
         if language.language_tag.lower().startswith("en-"):
             return language.language_tag
     pytest.skip("An English Windows OCR language pack is not installed")
+
+
+@pytest.fixture
+def ocr_language(request: pytest.FixtureRequest, windows_ocr: Any) -> str:
+    requested = str(request.param)
+    for language in windows_ocr.OcrEngine.available_recognizer_languages:
+        tag = language.language_tag
+        if tag.lower().split("-")[0] == requested:
+            return tag
+    pytest.skip(f"Windows OCR language pack '{requested}' is not installed")
+
+
+@pytest.fixture
+def scanned_pdf_factory(tmp_path: Path, pdfium: Any) -> Callable[[str], Path]:
+    """Render shaped Unicode text and embed it as an image-only PDF."""
+
+    if sys.platform != "win32":
+        pytest.skip("Synthetic scan generation uses Windows text rendering")
+    powershell = shutil.which("powershell.exe")
+    if powershell is None:
+        pytest.skip("Windows PowerShell is required to render Unicode test text")
+
+    def create(language: str) -> Path:
+        image_path = tmp_path / f"scan-{language}.jpg"
+        text = base64.b64encode(SCANNED_TEXT[language].encode("utf-8")).decode("ascii")
+        completed = subprocess.run(
+            [
+                powershell,
+                "-NoProfile",
+                "-NonInteractive",
+                "-File",
+                str(Path(__file__).with_name("render_test_text.ps1")),
+                "-OutputPath",
+                str(image_path),
+                "-TextBase64",
+                text,
+                "-Direction",
+                "rtl" if language == "ar" else "ltr",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+        if completed.returncode == 3:
+            pytest.skip(completed.stdout.strip())
+        assert completed.returncode == 0, completed.stdout + completed.stderr
+        destination = tmp_path / f"scan-{language}.pdf"
+        with pdfium.PdfDocument.new() as pdf:
+            page = pdf.new_page(400, 200)
+            try:
+                image = pdfium.PdfImage.new(pdf)
+                image.load_jpeg(image_path, inline=True)
+                image.set_matrix(pdfium.PdfMatrix(a=400, d=200))
+                page.insert_obj(image)
+                page.gen_content()
+                pdf.save(destination)
+            finally:
+                page.close()
+        return destination
+
+    return create
+
+
+@pytest.fixture
+def synthetic_scanned_pdf(
+    ocr_language: str, scanned_pdf_factory: Callable[[str], Path]
+) -> Path:
+    return scanned_pdf_factory(ocr_language.lower().split("-")[0])
 
 
 @pytest.fixture
