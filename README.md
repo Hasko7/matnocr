@@ -1,302 +1,230 @@
 # MatnOCR
 
-Fast, local PDF OCR for Windows, with a focus on Arabic books and support for
-the Windows OCR languages installed on your system. Text recognition runs
-offline, without a cloud service or GPU.
+Fast, offline OCR for scanned PDFs on Windows. Built for Arabic books, with
+support for the OCR languages installed on your system. No cloud service or GPU
+required.
 
-MatnOCR is under development. The OCR CLI is implemented; GitHub CI, PyPI
-publishing, and packaged Windows releases are still planned.
-See [TODO.md](TODO.md) for the detailed status.
+**Status:** Development preview. Install from a local checkout today; PyPI
+publishing and packaged Windows releases are planned.
+
+![MatnOCR processing a PDF in Windows Terminal](docs/images/terminal.png)
 
 ## Features
 
-- PDFium rendering through `pypdfium2`, with a fast path for embedded scans.
-- Direct-RAM pipeline to `Windows.Media.Ocr`, without temporary raster files.
-- Position-based word ordering for Arabic and other RTL languages.
-- Page ranges, three quality presets, and UTF-8 TXT or Markdown output with page markers.
-- Line and paragraph spacing, or continuous text with `--no-layout`.
-- Dynamic OCR language discovery, a saved default language, and language pack management.
-- Rich progress display, `--quiet`, system diagnostics, and clear error messages.
+- **Local processing:** native Windows OCR with PDF pixels kept in RAM.
+- **Arabic and RTL:** word ordering reconstructed from detected positions.
+- **TXT and Markdown:** UTF-8 exports, page markers, and a saved format preference.
+- **Flexible input:** select pages, choose a quality preset, and switch languages.
+- **Terminal-friendly:** progress, throughput, diagnostics, and a quiet mode.
+- **Safe output:** existing exports are protected unless you pass `--force`.
 
-## Requirements and Installation
+## Installation
 
-You need Windows with the `Windows.Media.Ocr` API available, Python 3.11 or
-later, uv, and the appropriate Windows OCR language pack. Full validation of
-the planned Python version matrix is still pending.
+Requires Windows with `Windows.Media.Ocr`, Python 3.11 or later, uv, and an OCR
+language pack for the text you want to recognize. The full Python version matrix
+is still being validated.
 
-Install and run from the local repository:
+From a local checkout:
+
+```powershell
+uv tool install .
+matnocr doctor
+```
+
+For development, use the project environment instead:
 
 ```powershell
 uv sync --locked
 uv run matnocr --help
-uv run matnocr doctor
 ```
 
-Optionally, install a standalone CLI command from this checkout:
-
-```powershell
-uv tool install .
-matnocr --help
-```
-
-This tool installation uses its own environment. After source changes,
-reinstall it from the same checkout:
-
-```powershell
-uv tool install --reinstall .
-```
-
-For development, `uv run matnocr` uses the project environment directly.
-You can also use `uv run python -m matnocr`. Installation from PyPI with
-`uv tool install matnocr`, pipx, or pip is planned after the public release.
+See the [development guide](docs/development.md) for editable installation and
+local checks.
 
 ## Quick Start
 
 ```powershell
-uv run matnocr languages
-uv run matnocr book.pdf --lang ar --pages 1-10
+# Show installed OCR languages
+matnocr languages
+
+# Recognize an Arabic PDF
+matnocr book.pdf --lang ar
+
+# Export selected pages as Markdown
+matnocr book.pdf --pages 9-10 -o notes.md
 ```
 
-After installing the tool, these commands are equivalent:
+`matnocr ocr book.pdf` is also supported. Without options, MatnOCR uses the
+saved language (initially Arabic), 300 DPI, and TXT output. The resulting file
+is saved next to the PDF, for example `book_matnocr_ar_300dpi.txt`.
 
-```powershell
-matnocr book.pdf
-matnocr ocr book.pdf
-```
+## Arabic OCR Example
 
-Without `--lang`, MatnOCR uses the saved default language, initially Arabic
-(`ar`). The default resolution is 300 DPI. The automatic output filename is,
-for example, `book_matnocr_ar_300dpi.txt`, saved next to the PDF.
+An actual Arabic book page, followed by its unedited MatnOCR Markdown output.
+The example includes the heading, body text, and footnote.
 
-Example completion output (illustrative values):
+![Scanned Arabic book page headed الأمور بمقاصدها](docs/images/book_page.png)
+
+**Language:** `ar-SA` · **Resolution:** 300 DPI · **PDF page:** 21 (printed page 24).
+
+Recognized output, including the original OCR errors:
 
 ```text
-2 pages · 1.1s · 1.82 pages/s
-✓ Saved to C:\Books\book_matnocr_ar_300dpi.txt
+# Page 24
+
+الأمور بمقاصدها
+
+
+وكل من الوضوء، والغسل، والصوم، ونحوها، قد يكون فرضا ونذرا
+ونفلا، والتيمم قد يكون عن الحدث أو الجنابة، والصورة واحدة،
+فشرعت؛ لتمييز رتب العبادات بعضها من بعض.
+
+ومن ثم ترتب على ذلك أمور:
+الاول: عدم اشتراط النية في عبادة لا تكون عادة، أو لا تلتبس
+بغيرها، كالإيمان بالله تعالى، والخوف، والرجاء، والنية، وقراءة القرآن ،
+والاذكار؛ لانها متميزة بصورتها.
+
+وأما التروك، كالزنا وغيره، فلم يحتج إلن نية؛ لحصول المقصود
+منها ، وهو اجتناب المنهي بكونه لم يوجد، وإن لم يكن نية
+نعم، يحتاج إليها في حصول الثواب المترتب على الترك.
+الأمر الثافي: (اشتراط التعيين فيما يلتبس دون غيره، قال في شرح
+المهذب"". دليل ذلك قوله تتهيلا: «وإنما لكل امرئ ما نول» ، فهذا
+ظاهر في اشتراط التعيين؛ لأن أصل النية فهم من أول الحديث: «إنما
+الأعمال بالنيات».
+
+وذلك كالصلاة، فيشترط التعيين في فرائضها لتساوي الظهر والعصر
+فعلا وصورة، فلا يميز بينهما إلا التعيين، وكالرواتب، فيشترط تعيينها
+بإضافتها إلى الظهر مثلا، أو كونها التي قبلها أو التي بعدها). قال
+السيوطي، كما جزم به في شرح المهذب). انتهىل.
+
+٣) ٢٢٤/٦.
+٢٤
 ```
 
-## Pages and Quality
+Results vary with scan quality, typography, and layout. MatnOCR does not
+automatically correct recognized words. See the [screenshot notes](docs/images/README.md)
+for the image files used in this README.
 
-```powershell
-matnocr book.pdf --pages 30-50
-matnocr book.pdf --pages 1,5,20-35,100
-matnocr book.pdf --page-count
-matnocr book.pdf --quality fast
-matnocr book.pdf --dpi 250
-```
+## Common Options
 
-Page numbers refer to physical PDF pages starting at 1, regardless of printed
-book page numbers. Duplicates are removed, and pages are processed in ascending
-order. `--page-count` prints only the total page count and cannot be combined
-with `--pages`.
-
-| Preset | DPI |
+| Task | Command |
 | --- | --- |
-| `fast` | 200 |
-| `balanced` | 250 |
-| `quality` (default) | 300 |
+| Choose pages | `matnocr book.pdf --pages 1,5,20-35` |
+| Count PDF pages | `matnocr book.pdf --page-count` |
+| Choose quality | `matnocr book.pdf --quality balanced` |
+| Export Markdown | `matnocr book.pdf --format md` |
+| Choose an output file | `matnocr book.pdf -o notes.md` |
+| Save a default format | `matnocr output default md` |
+| Show formats and examples | `matnocr output` |
+| Ignore line and paragraph layout | `matnocr book.pdf --no-layout` |
+| Suppress progress and summary | `matnocr book.pdf --quiet` |
+| Replace an existing export | `matnocr book.pdf -o notes.md --force` |
 
-`--dpi` accepts 200, 250, or 300 and cannot be combined with `--quality`.
-125 DPI is used only internally to validate suspected non-text pages.
+Quality presets are `fast` (200 DPI), `balanced` (250 DPI), and `quality`
+(300 DPI, the default). You can use `--dpi 200`, `250`, or `300` instead.
 
-## Languages and Windows OCR Language Packs
+The `-o` extension selects the format: `.txt` for plain text, `.md` or
+`.markdown` for Markdown. Without an explicit extension or `--format`, the
+saved preference applies. Reset it with `matnocr output default txt`.
+Markdown separates pages with headings such as `# Page 9`, using the original
+PDF page numbers.
+
+Full details: [usage guide](docs/usage.md) · `matnocr ocr --help`.
+
+## Languages
+
+MatnOCR supports **35 Windows OCR language variants**, including Arabic,
+Chinese, English, German, Japanese, Korean, Russian, and Turkish. Install the
+corresponding Windows OCR language pack to recognize text in that language.
+
+| Code | Language |
+| --- | --- |
+| `ar-SA` | Arabic (Saudi Arabia) |
+| `bg-BG` | Bulgarian |
+| `bs-LATN-BA` | Bosnian (Latin) |
+| `cs-CZ` | Czech |
+| `da-DK` | Danish |
+| `de-DE` | German (Germany) |
+| `el-GR` | Greek |
+| `en-GB` | English (United Kingdom) |
+| `en-US` | English (United States) |
+| `es-ES` | Spanish (Spain) |
+| `es-MX` | Spanish (Mexico) |
+| `fi-FI` | Finnish |
+| `fr-CA` | French (Canada) |
+| `fr-FR` | French (France) |
+| `hr-HR` | Croatian (Croatia) |
+| `hu-HU` | Hungarian |
+| `it-IT` | Italian (Italy) |
+| `ja-JP` | Japanese |
+| `ko-KR` | Korean |
+| `nb-NO` | Norwegian (Bokmål) |
+| `nl-NL` | Dutch (Netherlands) |
+| `pl-PL` | Polish |
+| `pt-BR` | Portuguese (Brazil) |
+| `pt-PT` | Portuguese (Portugal) |
+| `ro-RO` | Romanian (Romania) |
+| `ru-RU` | Russian |
+| `sk-SK` | Slovak |
+| `sl-SI` | Slovenian |
+| `sr-CYRL-RS` | Serbian (Cyrillic, Serbia) |
+| `sr-LATN-RS` | Serbian (Latin, Serbia) |
+| `sv-SE` | Swedish (Sweden) |
+| `tr-TR` | Turkish |
+| `zh-CN` | Chinese (Simplified, Mainland China) |
+| `zh-HK` | Chinese (Traditional, Hong Kong SAR) |
+| `zh-TW` | Chinese (Traditional, Taiwan) |
+
+The table reflects the Windows OCR capability catalog reported on the test
+system. Actual availability and installation status are queried dynamically
+on your own device. Automated OCR tests currently cover Arabic, German, and
+English.
 
 ```powershell
 matnocr languages
 matnocr languages default ar-SA
-matnocr book.pdf --lang de
 matnocr languages available
-matnocr languages install fr-FR
-matnocr languages remove fr-FR
+matnocr languages install de-DE
 ```
 
-Installed OCR languages are queried through Windows. Short codes such as `ar`
-or `de` resolve to a matching installed tag such as `ar-SA` or `de-DE`.
-The saved default language appears in the language list and the main help text.
+Available languages are queried from Windows. Installing or removing OCR packs
+requires administrator approval and may require a download; OCR itself runs
+offline. See [language management](docs/usage.md#languages-and-windows-ocr-language-packs).
 
-`languages available` queries the Windows capability catalog dynamically.
-Installation and removal require administrator privileges; when needed,
-MatnOCR opens PowerShell through a Windows UAC prompt. Querying the catalog
-may also require administrator approval. Installing language packs may require
-a download; subsequent OCR runs work offline. To remove the active default
-language, select another default first.
+## Limitations
 
-The default language is saved in `%LOCALAPPDATA%\MatnOCR\config.json`.
-Set `MATNOCR_CONFIG_HOME` to override the configuration directory.
+- Windows OCR and an appropriate language pack are required.
+- There is no automatic spelling correction or Arabic normalization.
+- Word ordering and paragraph spacing do not reconstruct complex columns,
+  tables, or footnotes. Non-text detection is heuristic.
+- Images above the Windows OCR size limit produce an error; automatic splitting
+  is not available.
+- PDF/JSON export, batch processing, resume support, and a GUI are not available yet.
 
-## Output and Scripting
+Historical timings and their scope are documented in [benchmarks](docs/benchmarks.md).
+They are not a performance guarantee for the current version.
 
-```powershell
-matnocr book.pdf -o result.txt
-matnocr book.pdf --no-layout
-matnocr book.pdf --quiet
-```
+## Roadmap
 
-TXT is the initial default and uses UTF-8 with markers such as
-`========== Page 1 ==========`. Markdown uses headings with the original PDF
-page numbers:
+After the initial public release, planned additions include:
 
-```markdown
-# Page 9
+- **PDF export (v0.2):** a new PDF displaying the recognized text, and a searchable
+  scan PDF preserving the original pages with an invisible OCR text layer.
+- **Batch processing:** recognize multiple PDFs or folders.
+- **Resume support:** continue interrupted book processing.
+- **Structured output:** JSON and word bounding boxes.
 
-Recognized text from page 9.
+## Contributing
 
-# Page 10
+Development uses uv, Ruff, ty, and pytest. Integration tests generate original
+English, German, and Arabic documents locally, with language-dependent skips.
 
-Recognized text from page 10.
-```
-
-Choose the format for one run, or save your preferred default:
-
-```powershell
-matnocr book.pdf --format md
-matnocr book.pdf -o notes.md
-matnocr output
-matnocr output default md
-matnocr output default txt
-```
-
-`matnocr output` displays the saved default, available formats, and usage
-examples. The same guide is available with `matnocr output --help`.
-Without `--format` or a filename
-extension, this default determines both the content and automatic extension
-(`.txt` or `.md`). The preference is stored alongside the default language in
-`config.json`; changing one preference preserves the other.
-
-An explicit `-o` extension takes precedence over the saved default: `.md` and
-`.markdown` select Markdown, while `.txt` selects TXT (case-insensitive).
-A filename without an extension receives the extension of the selected format.
-`--format txt` or `--format md` overrides the saved default for a single run.
-If `--format` conflicts with the filename extension, MatnOCR reports an error
-before OCR starts. Other extensions, including `.pdf`, are not supported yet.
-
-Both output formats preserve the recognized words without interpreting book
-headings, lists, or other document structure. Only page headings are added to
-Markdown; characters that have Markdown meaning in the OCR text are not escaped.
-By default, OCR lines are preserved, and unusually large vertical gaps produce
-blank lines. `--no-layout` joins lines with spaces. Recognized words are not
-linguistically corrected or normalized.
-
-Highly fragmented results may come from ornaments rather than text. Only
-these suspicious pages receive a second OCR pass at 125 DPI. If that pass does
-not confirm plausible text, the page is left blank in the output.
-
-`--quiet` suppresses progress and the completion summary. Recognized text is
-written to the output file; errors go to stderr. Invalid arguments return a
-nonzero exit status; runtime and write errors return exit code 1. Progress
-animations run only in interactive terminals. Colors are disabled in CI,
-with `NO_COLOR`, and in other environments that do not support them.
-
-Existing output files are protected by default, including automatically named
-exports. MatnOCR reports the conflict before OCR starts. To replace one
-explicitly:
-
-```powershell
-matnocr book.pdf -o notes.md --force
-```
-
-The destination directory must already exist. Invalid paths, permissions, and
-locked files produce a clear stderr error with exit code 1, without a traceback.
-With `--force`, MatnOCR writes a temporary text file beside the destination and
-replaces the old export only after the write succeeds. This does not add any
-temporary raster files to the OCR pipeline.
-
-## Current Limitations
-
-- The OCR runtime is Windows-specific and requires installed language packs.
-- Images exceeding the maximum Windows OCR dimensions produce an error;
-  automatic splitting is not implemented.
-- Word ordering and paragraph spacing do not replace complex layout analysis
-  for columns, tables, or footnotes. Non-text detection is also heuristic.
-- PDF/JSON output, batch processing, resume support, parallel OCR, and a GUI
-  are not implemented yet.
-
-## Planned for Version 0.2: PDF Export
-
-After the initial public release, PDF export is planned in two forms:
-
-- **Text PDF:** a new document displaying the recognized text, with proper
-  Arabic/RTL rendering, fonts, and pagination.
-- **Searchable scan PDF:** the original scanned pages with an invisible OCR
-  text layer for searching and copying, preserving the visible page layout.
-
-Both remain roadmap goals; neither is currently available. The backend,
-licenses, text positioning, and Arabic search/copy behavior must be evaluated
-before implementation. See [TODO.md](TODO.md).
-
-## Benchmarks
-
-Historical local results from the earlier **PyMuPDF Direct-RAM prototype**,
-using a six-page scanned Arabic PDF:
-
-| Resolution | Total time | Time per page |
-| --- | --- | --- |
-| 200 DPI | 1.685 s | 0.281 s |
-| 300 DPI | 2.137 s | 0.356 s |
-
-These values do not measure the current pypdfium2 package version and are not
-a general performance guarantee. According to the roadmap, the renderer
-comparison at 200/250/300 DPI is complete; pypdfium2 was selected with
-practically comparable OCR quality. Memory usage, wheel size, and a complete
-release benchmark with hardware details remain pending.
-See [PROJECT.md](PROJECT.md) for more background.
-
-## Development and Contributing
-
-Before making substantial changes, read [AGENTS.md](AGENTS.md),
-[PROJECT.md](PROJECT.md), and [TODO.md](TODO.md). Keep changes small and easy
-to review, cover Arabic/RTL examples, and measure performance before and after
-pipeline changes. Do not add private book pages as public test data; prefer
-synthetic or public-domain documents.
-
-The development dependency group already includes Ruff, ty, pytest, and
-pytest-cov. Local commands:
-
-```powershell
-uv sync --locked
-uv run pytest
-uv run pytest -m "not integration"
-uv run pytest -m integration
-uv run pytest --cov=matnocr
-uv run ruff check .
-uv run ruff format --check .
-uv run ty check
-```
-
-To apply formatting, run `uv run ruff format .`.
-Ruff, ty, pytest, and branch coverage are configured in `pyproject.toml`.
-Ruff targets Python 3.11 and checks common syntax errors, undefined names,
-imports, modernization, and common bug patterns. Its formatter uses 88 columns
-and double quotes. The historical `prototype.py` and `add_new_white_page.py`
-experiments are excluded from Ruff; ty checks `src/` and `tests/`, targeting
-Python 3.11 on Windows. These scripts are not distributed application code.
-
-The installed PyWinRT typing works with ty without global rule suppression or
-missing-import exceptions. `Any` remains at the existing native OCR/bitmap
-boundaries and in test doubles, where dynamic projection objects are passed
-through. Core configuration, page selection, and output functions remain typed.
-
-Integration tests are marked `integration` and live in `tests/integration/`.
-They generate original English, German, and Arabic PDFs at runtime and check
-PDFium rendering, SoftwareBitmap copying, and real OCR. The German and Arabic
-documents contain only scan images, generated with Windows text shaping to
-preserve umlauts, eszett, and connected Arabic letters. Tests check selected
-words and their order rather than requiring identical punctuation.
-
-Windows tests skip when Windows or the required WinRT module is unavailable;
-each language-specific OCR test skips if its language pack is missing.
-Generating the Unicode scans also requires Windows PowerShell, System.Drawing,
-and the locally installed Arial font; affected tests skip if these capabilities
-are unavailable. No new package dependencies or bundled font files are needed.
-No language packs are installed by tests, and no private book pages are used.
-See [the integration test notes](tests/integration/README.md) for details.
-The full suite currently requires Windows
-because application modules imported by unit tests use WinRT. GitHub CI remains
-a later roadmap task.
+Start with the [development guide](docs/development.md). Project architecture,
+working rules, and the detailed task list are maintained in
+[PROJECT.md](PROJECT.md), [AGENTS.md](AGENTS.md), and [TODO.md](TODO.md).
 
 ## License
 
-MatnOCR is licensed under [Apache-2.0](LICENSE). Dependencies retain their own
-licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-Bundled Windows releases must also include the complete PDFium and third-party
-license files from the builds used.
+[Apache-2.0](LICENSE). Dependencies retain their own licenses; see
+[third-party notices](THIRD_PARTY_NOTICES.md). Bundled Windows releases must
+include the complete PDFium and third-party license files for their builds.

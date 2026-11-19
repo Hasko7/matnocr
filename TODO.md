@@ -344,6 +344,10 @@ README enthält:
 
 - [x] Projektbeschreibung
 - [x] Screenshot / CLI-Beispiel
+- [x] README für neue Nutzer strukturieren und Detaildokumentation nach `docs/` auslagern
+- [x] Screenshot-Pfade und Anleitung unter `docs/images/` vorbereiten
+- [x] echten Terminal-Screenshot als `docs/images/terminal.png` ergänzen (Nutzer)
+- [x] arabische Buchseite als `docs/images/book_page.png` mit unverändertem OCR-Beispiel ergänzen (Nutzer)
 - [x] Features
 - [x] Installation
 - [x] Quick Start
