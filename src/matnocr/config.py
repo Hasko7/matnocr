@@ -6,6 +6,13 @@ from types import MappingProxyType
 from typing import Final
 
 
+class OutputFormat(StrEnum):
+    """Supported text export formats."""
+
+    TXT = "txt"
+    MARKDOWN = "md"
+
+
 class QualityPreset(StrEnum):
     """Named OCR quality levels exposed by the CLI."""
 

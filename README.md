@@ -13,7 +13,7 @@ See [TODO.md](TODO.md) for the detailed status.
 - PDFium rendering through `pypdfium2`, with a fast path for embedded scans.
 - Direct-RAM pipeline to `Windows.Media.Ocr`, without temporary raster files.
 - Position-based word ordering for Arabic and other RTL languages.
-- Page ranges, three quality presets, and UTF-8 TXT output with page markers.
+- Page ranges, three quality presets, and UTF-8 TXT or Markdown output with page markers.
 - Line and paragraph spacing, or continuous text with `--no-layout`.
 - Dynamic OCR language discovery, a saved default language, and language pack management.
 - Rich progress display, `--quiet`, system diagnostics, and clear error messages.
@@ -132,7 +132,47 @@ matnocr book.pdf --no-layout
 matnocr book.pdf --quiet
 ```
 
-TXT output uses UTF-8 and markers such as `========== Page 1 ==========`.
+TXT is the initial default and uses UTF-8 with markers such as
+`========== Page 1 ==========`. Markdown uses headings with the original PDF
+page numbers:
+
+```markdown
+# Page 9
+
+Recognized text from page 9.
+
+# Page 10
+
+Recognized text from page 10.
+```
+
+Choose the format for one run, or save your preferred default:
+
+```powershell
+matnocr book.pdf --format md
+matnocr book.pdf -o notes.md
+matnocr output
+matnocr output default md
+matnocr output default txt
+```
+
+`matnocr output` displays the saved default, available formats, and usage
+examples. The same guide is available with `matnocr output --help`.
+Without `--format` or a filename
+extension, this default determines both the content and automatic extension
+(`.txt` or `.md`). The preference is stored alongside the default language in
+`config.json`; changing one preference preserves the other.
+
+An explicit `-o` extension takes precedence over the saved default: `.md` and
+`.markdown` select Markdown, while `.txt` selects TXT (case-insensitive).
+A filename without an extension receives the extension of the selected format.
+`--format txt` or `--format md` overrides the saved default for a single run.
+If `--format` conflicts with the filename extension, MatnOCR reports an error
+before OCR starts. Other extensions, including `.pdf`, are not supported yet.
+
+Both output formats preserve the recognized words without interpreting book
+headings, lists, or other document structure. Only page headings are added to
+Markdown; characters that have Markdown meaning in the OCR text are not escaped.
 By default, OCR lines are preserved, and unusually large vertical gaps produce
 blank lines. `--no-layout` joins lines with spaces. Recognized words are not
 linguistically corrected or normalized.
@@ -147,17 +187,42 @@ nonzero exit status; runtime and write errors return exit code 1. Progress
 animations run only in interactive terminals. Colors are disabled in CI,
 with `NO_COLOR`, and in other environments that do not support them.
 
+Existing output files are protected by default, including automatically named
+exports. MatnOCR reports the conflict before OCR starts. To replace one
+explicitly:
+
+```powershell
+matnocr book.pdf -o notes.md --force
+```
+
+The destination directory must already exist. Invalid paths, permissions, and
+locked files produce a clear stderr error with exit code 1, without a traceback.
+With `--force`, MatnOCR writes a temporary text file beside the destination and
+replaces the old export only after the write succeeds. This does not add any
+temporary raster files to the OCR pipeline.
+
 ## Current Limitations
 
 - The OCR runtime is Windows-specific and requires installed language packs.
-- Existing output files are currently overwritten, including automatically
-  named output files. Overwrite protection is still planned.
 - Images exceeding the maximum Windows OCR dimensions produce an error;
   automatic splitting is not implemented.
 - Word ordering and paragraph spacing do not replace complex layout analysis
   for columns, tables, or footnotes. Non-text detection is also heuristic.
-- JSON/Markdown output, batch processing, resume support, parallel OCR, and
-  a GUI are not implemented yet.
+- PDF/JSON output, batch processing, resume support, parallel OCR, and a GUI
+  are not implemented yet.
+
+## Planned for Version 0.2: PDF Export
+
+After the initial public release, PDF export is planned in two forms:
+
+- **Text PDF:** a new document displaying the recognized text, with proper
+  Arabic/RTL rendering, fonts, and pagination.
+- **Searchable scan PDF:** the original scanned pages with an invisible OCR
+  text layer for searching and copying, preserving the visible page layout.
+
+Both remain roadmap goals; neither is currently available. The backend,
+licenses, text positioning, and Arabic search/copy behavior must be evaluated
+before implementation. See [TODO.md](TODO.md).
 
 ## Benchmarks
 
@@ -189,18 +254,36 @@ pytest-cov. Local commands:
 
 ```powershell
 uv sync --locked
-uv run pytest tests/unit
-uv run pytest --cov=matnocr tests/unit
+uv run pytest
+uv run pytest -m "not integration"
+uv run pytest -m integration
+uv run pytest --cov=matnocr
 uv run ruff check .
 uv run ruff format --check .
 uv run ty check
 ```
 
 To apply formatting, run `uv run ruff format .`.
-These commands describe the intended verification workflow, not a claim that
-all checks already pass. Project-specific tool configuration, integration
-tests, and CI remain open roadmap items. The tests also import Windows
-components and should currently be run on Windows.
+Ruff, ty, pytest, and branch coverage are configured in `pyproject.toml`.
+Ruff targets Python 3.11 and checks common syntax errors, undefined names,
+imports, modernization, and common bug patterns. Its formatter uses 88 columns
+and double quotes. The historical `prototype.py` and `add_new_white_page.py`
+experiments are excluded from Ruff; ty checks `src/` and `tests/`, targeting
+Python 3.11 on Windows. These scripts are not distributed application code.
+
+The installed PyWinRT typing works with ty without global rule suppression or
+missing-import exceptions. `Any` remains at the existing native OCR/bitmap
+boundaries and in test doubles, where dynamic projection objects are passed
+through. Core configuration, page selection, and output functions remain typed.
+
+Integration tests are marked `integration` and live in `tests/integration/`.
+They generate an original English PDF at runtime and check PDFium rendering,
+SoftwareBitmap copying, and real OCR. Windows tests skip when Windows or the
+required WinRT module is unavailable; the text recognition test skips if no
+English OCR pack is installed. No language packs are installed by tests, and
+no private book pages are used. The full suite currently requires Windows
+because application modules imported by unit tests use WinRT. GitHub CI remains
+a later roadmap task.
 
 ## License
 

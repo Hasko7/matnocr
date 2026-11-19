@@ -10,7 +10,7 @@ import typer
 from typer import _click
 from typer.core import TyperGroup
 
-from .config import QualityPreset, resolve_dpi
+from .config import OutputFormat, QualityPreset, resolve_dpi
 from .doctor import run_doctor_checks
 from .engine import recognize_pdf
 from .language_capabilities import (
@@ -27,13 +27,20 @@ from .languages import (
     is_rtl,
     resolve_language,
 )
-from .output import write_text_output
+from .output import (
+    resolve_output_format,
+    resolve_output_path,
+    validate_output_path,
+    write_text_output,
+)
 from .pages import PageRangeError, validate_page_selection
 from .renderer import get_pdf_page_count
 from .settings import (
     SettingsError,
     load_default_language,
+    load_default_output_format,
     save_default_language,
+    save_default_output_format,
 )
 from .ui import (
     OcrProgress,
@@ -59,6 +66,23 @@ LANGUAGES_EPILOG = """[bold]Examples[/bold]
   matnocr languages available
   matnocr languages install fr-FR
   matnocr languages default ar-SA
+"""
+
+OUTPUT_GUIDE = """Available formats:
+  txt  Plain text (.txt), with page markers. Initial default.
+  md   Markdown (.md or .markdown), with # Page x headings.
+
+Save a default:
+  matnocr output default txt
+  matnocr output default md
+
+Choose a format for one run:
+  matnocr book.pdf --format md
+  matnocr book.pdf -o notes.md
+  matnocr book.pdf -o notes.txt
+
+The -o extension overrides the saved default.
+Conflicting --format and -o extensions produce an error.
 """
 
 
@@ -148,6 +172,13 @@ languages_app = typer.Typer(
     rich_markup_mode="rich",
 )
 app.add_typer(languages_app, name="languages")
+output_app = typer.Typer(
+    invoke_without_command=True,
+    no_args_is_help=False,
+    help="Show and configure the default output format.",
+    epilog=OUTPUT_GUIDE,
+)
+app.add_typer(output_app, name="output")
 
 
 def version_callback(value: bool) -> None:
@@ -245,11 +276,28 @@ def main(
             rich_help_panel="Output",
         ),
     ] = None,
+    output_format: Annotated[
+        OutputFormat | None,
+        typer.Option(
+            "--format",
+            case_sensitive=False,
+            help="Output format: txt or md. Otherwise use -o extension or saved default.",
+            rich_help_panel="Output",
+        ),
+    ] = None,
     quiet: Annotated[
         bool,
         typer.Option(
             "--quiet",
             help="Suppress progress and summary output.",
+            rich_help_panel="Output",
+        ),
+    ] = False,
+    force: Annotated[
+        bool,
+        typer.Option(
+            "--force",
+            help="Overwrite an existing output file.",
             rich_help_panel="Output",
         ),
     ] = False,
@@ -303,6 +351,13 @@ def main(
             raise typer.BadParameter(str(error), param_hint="--pages") from error
 
     try:
+        resolved_format = resolve_output_format(
+            output, output_format, load_default_output_format()
+        )
+    except (ValueError, SettingsError) as error:
+        raise typer.BadParameter(str(error), param_hint="--format/--output") from error
+
+    try:
         requested_language = lang or load_default_language()
         language_tag = resolve_language(requested_language)
     except (LanguageNotInstalledError, SettingsError) as error:
@@ -310,6 +365,15 @@ def main(
             str(error),
             param_hint="--lang/default language",
         ) from error
+
+    try:
+        destination = resolve_output_path(
+            pdf_path, language_tag, resolved_dpi, output, resolved_format
+        )
+        validate_output_path(destination, force=force)
+    except OSError as error:
+        print_error(f"Could not write the OCR output: {error}")
+        raise typer.Exit(code=1) from error
 
     if not quiet:
         print_ocr_configuration(
@@ -339,12 +403,47 @@ def main(
         raise typer.Exit(code=1) from error
 
     try:
-        output_path = write_text_output(result, output)
+        output_path = write_text_output(
+            result, output, output_format=resolved_format, force=force
+        )
     except OSError as error:
         print_error(f"Could not write the OCR output: {error}")
         raise typer.Exit(code=1) from error
     if not quiet:
         print_completion_summary(result, output_path)
+
+
+@output_app.callback()
+def output_command(ctx: typer.Context) -> None:
+    """Display the saved output preference."""
+
+    if ctx.invoked_subcommand is not None:
+        return
+    try:
+        output_format = load_default_output_format()
+    except SettingsError as error:
+        print_error(error)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"Default output format: {output_format.value}")
+    typer.echo("\n" + OUTPUT_GUIDE)
+
+
+@output_app.command("default")
+def set_default_output_format_command(
+    output_format: Annotated[
+        OutputFormat,
+        typer.Argument(help="Default export format: txt or md.", case_sensitive=False),
+    ],
+) -> None:
+    """Save the format used when no output extension or --format is supplied."""
+
+    try:
+        settings_path = save_default_output_format(output_format)
+    except SettingsError as error:
+        print_error(error)
+        raise typer.Exit(code=1) from error
+    print_success(f"Default output format: {output_format.value}")
+    typer.echo(f"Saved in: {settings_path}")
 
 
 @languages_app.callback()

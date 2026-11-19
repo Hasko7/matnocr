@@ -482,13 +482,40 @@ Die Anwendung soll niemals mit schwer verständlichen Python-Tracebacks enden, s
 
 ## 11. Ausgabeformate
 
-### Version 1
+### Version 0.1
 
-Primär:
+TXT bleibt die anfängliche Standardausgabe. Einfaches Markdown ist auf
+Nutzerwunsch aus v0.2 vorgezogen und implementiert. Es trennt Seiten mit
+`# Page <PDF-Seitennummer>`, ohne weitere Buchstruktur abzuleiten.
 
-```text
-TXT
+```powershell
+matnocr book.pdf --format md
+matnocr book.pdf -o notes.md
+matnocr output
+matnocr output default md
+matnocr output default txt
 ```
+
+Die Standardausgabe wird neben der Standardsprache in der benutzerspezifischen
+`config.json` gespeichert. Änderungen erhalten die jeweils andere Einstellung.
+`.txt` bei `-o` wählt TXT, `.md` oder `.markdown` wählt Markdown, unabhängig vom
+gespeicherten Standard und ohne Beachtung der Groß-/Kleinschreibung. Ohne Endung
+wird die gewählte Formatendung ergänzt. `--format txt|md` überschreibt den
+Standard für einen Aufruf; widerspricht es der Dateiendung, folgt vor OCR eine
+Fehlermeldung. Andere Dateiendungen werden abgelehnt.
+
+Vorhandene Ausgaben werden vor dem OCR-Lauf abgelehnt; nur `--force` erlaubt
+bewusstes Ersetzen. Beim normalen Schreiben verhindert exklusives Anlegen
+auch ein Überschreiben einer zwischenzeitlich entstandenen Datei. Bei `--force`
+wird eine vollständige temporäre Textdatei neben dem Ziel geschrieben und erst
+danach ersetzt. Fehlende Ausgabeordner, ungültige Pfade, Berechtigungs- und
+Schreibfehler führen zu einer stderr-Meldung mit Exit Code 1 ohne Traceback.
+Ausgabeordner werden nicht automatisch angelegt. Die temporäre Textdatei ist
+kein Rasterbild und verändert die Direct-RAM-OCR-Pipeline nicht.
+
+Automatische Dateinamen verwenden je nach Format `.txt` oder `.md`. Die
+Markdown-Ausgabe ist UTF-8 und erhält erkannte Wörter und Absatzabstände;
+Markdown-Sonderzeichen im OCR-Text werden nicht maskiert.
 
 Die normale TXT-Ausgabe enthält die von Windows OCR erkannten Zeilen und ergänzt
 bei deutlich größeren vertikalen Zeilenabständen eine Leerzeile. Mit
@@ -510,7 +537,7 @@ Seitenmarker:
 Geplant bzw. denkbar:
 
 ```text
-Markdown
+PDF (Text-PDF und durchsuchbare Scan-PDF, Ziel v0.2)
 JSON
 JSONL
 ```
@@ -621,8 +648,12 @@ ty
 
 Ruff, ty, pytest und pytest-cov (coverage.py) sind bereits in der
 Dev-Dependency-Gruppe von `pyproject.toml` eingetragen und in `uv.lock` erfasst.
-Die projektspezifische Konfiguration und vollständige Verifikation bleiben
-Aufgaben der Phase 3. Lokale Prüf- und Formatierungsbefehle stehen in `README.md`.
+Ruff, ty, pytest und Branch-Coverage sind in `pyproject.toml` konfiguriert.
+Ruff prüft den aktiven Code und Tests; die historischen Experimente
+`prototype.py` und `add_new_white_page.py` sind ausgeschlossen. ty prüft `src/`
+und `tests/` für Python 3.11 unter Windows. Die installierten PyWinRT-Typen
+benötigen keine globalen Regelabschaltungen; bestehende `Any`-Grenzen für native
+Objekte sind in `README.md` erklärt. Lokale Befehle stehen ebenfalls dort.
 
 ## 14. Projektstruktur und geplanter Ausbau
 
@@ -678,8 +709,8 @@ project/
 ```
 
 Das Paket liegt unter `src/matnocr/`; Unit Tests sind unter `tests/unit/`
-vorhanden. Der Baum zeigt auch geplante Dateien: Integrationstests,
-GitHub-Workflows und weitere Open-Source-Dokumente sind noch offen. Den
+und Integrationstests unter `tests/integration/` vorhanden. Der Baum zeigt auch
+geplante Dateien: GitHub-Workflows und weitere Open-Source-Dokumente sind offen. Den
 verbindlichen Umsetzungsstand beschreibt `TODO.md`.
 
 ## 15. Packaging und Installation
@@ -838,7 +869,7 @@ Zu testen:
 
 ### Integration Tests
 
-Separat:
+Unter `tests/integration/`, mit dem pytest-Marker `integration`:
 
 - Windows.Media.Ocr verfügbar
 - SoftwareBitmap-Konvertierung
@@ -847,7 +878,12 @@ Separat:
 - Direct-RAM-Pipeline
 - installierte Sprachpakete
 
-Integrationstests müssen berücksichtigen, dass GitHub Windows Runner nicht zwingend dieselben OCR-Sprachen installiert haben wie ein normaler Windows-11-PC.
+Die Tests erzeugen eine eigene englische PDF im temporären Testverzeichnis.
+Windows-abhängige Tests überspringen fehlende Plattform-/WinRT-Capabilities;
+der echte Text-OCR-Test überspringt ein fehlendes englisches Sprachpaket.
+Sie installieren keine Systemsprachen. GitHub Windows Runner können andere
+OCR-Sprachen als das lokale System haben. Weitere synthetische deutsche und
+arabische Dokumente bleiben in der Roadmap.
 
 ## 21. Releases
 
@@ -975,7 +1011,7 @@ Geplant:
 - `--dpi`
 - `--quality`
 - `--output`
-- TXT-Ausgabe
+- TXT- und einfache Markdown-Ausgabe mit gespeichertem Standard
 - `languages`
 - `doctor`
 - `--quiet`
@@ -993,7 +1029,7 @@ Noch nicht zwingend in v0.1:
 - KI-Korrektur
 - Tesseract-Ensemble
 - komplexe Layout-Rekonstruktion
-- Markdown-Layout
+- komplexe Markdown-Layoutrekonstruktion
 - OCR-Server
 - parallele OCR
 - Batch-Ordnerverarbeitung
@@ -1002,10 +1038,19 @@ Noch nicht zwingend in v0.1:
 
 ### Erweiterte Ausgabe
 
-- Markdown
+Einfaches Markdown mit Seitenüberschriften ist bereits in v0.1 verfügbar.
+Weitere Ziele:
+
+- PDF-Export für Version 0.2 nach der ersten öffentlichen Veröffentlichung:
+  - Text-PDF mit sichtbarem OCR-Text, geeigneten Schriften, Arabisch-/RTL-Darstellung und Seitenumbrüchen.
+  - Durchsuchbare Scan-PDF mit Originalseiten und unsichtbarer OCR-Textebene zum Suchen und Kopieren.
 - JSON
 - JSONL
 - Bounding Boxes
+
+Für beide PDF-Varianten müssen Backend und Lizenzfolgen sowie Textpositionen,
+Schriften und Such-/Kopierverhalten bei Arabisch geprüft werden. PDF-Export ist
+noch nicht implementiert und soll die bestehende Direct-RAM-OCR nicht verändern.
 
 ### Batch-Verarbeitung
 

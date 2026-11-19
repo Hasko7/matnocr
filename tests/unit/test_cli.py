@@ -6,6 +6,7 @@ from typer.testing import CliRunner
 
 from matnocr import cli
 from matnocr.cli import app
+from matnocr.config import OutputFormat
 from matnocr.doctor import DiagnosticCheck
 from matnocr.engine import OcrRunResult
 from matnocr.language_capabilities import (
@@ -16,6 +17,11 @@ from matnocr.language_capabilities import (
 from matnocr.languages import LanguageNotInstalledError, OcrLanguage
 
 runner = CliRunner()
+
+
+@pytest.fixture(autouse=True)
+def isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MATNOCR_CONFIG_HOME", str(tmp_path))
 
 
 def test_help_is_available() -> None:
@@ -214,7 +220,12 @@ def test_quality_output_and_quiet_options(monkeypatch: pytest.MonkeyPatch) -> No
     def fake_write_text_output(
         _result: OcrRunResult,
         destination: Path | None,
+        *,
+        output_format: OutputFormat,
+        force: bool,
     ) -> Path:
+        assert output_format == OutputFormat.TXT
+        assert force is False
         captured["output"] = destination
         return destination or output_path
 
@@ -431,7 +442,9 @@ def test_output_write_failure_is_a_clean_stderr_error(
             rendered_pages=0,
         )
 
-    def fail_to_write(_result: OcrRunResult, _destination: Path | None) -> Path:
+    def fail_to_write(
+        _result: OcrRunResult, _destination: Path | None, **_kwargs: object
+    ) -> Path:
         raise PermissionError("access denied")
 
     monkeypatch.setattr(cli, "recognize_pdf", fake_recognize_pdf)
@@ -442,4 +455,141 @@ def test_output_write_failure_is_a_clean_stderr_error(
     assert result.exit_code == 1
     assert result.stdout == ""
     assert "Error: Could not write the OCR output: access denied" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+def test_output_default_can_be_set_and_displayed() -> None:
+    assert "Default output format: txt" in runner.invoke(app, ["output"]).stdout
+    result = runner.invoke(app, ["output", "default", "md"])
+    assert result.exit_code == 0
+    assert "Default output format: md" in result.stdout
+    assert "Default output format: md" in runner.invoke(app, ["output"]).stdout
+    assert runner.invoke(app, ["output", "default", "pdf"]).exit_code == 2
+
+
+@pytest.mark.parametrize("args", [["output"], ["output", "--help"]])
+def test_output_overview_explains_formats_and_usage(args: list[str]) -> None:
+    result = runner.invoke(app, args)
+    assert result.exit_code == 0
+    for text in (
+        "Available formats:",
+        "Plain text (.txt)",
+        "Markdown (.md or .markdown)",
+        "# Page x",
+        "matnocr output default txt",
+        "matnocr output default md",
+        "matnocr book.pdf --format md",
+        "matnocr book.pdf -o notes.md",
+        "matnocr book.pdf -o notes.txt",
+        "extension overrides the saved default",
+    ):
+        assert text in result.stdout
+
+
+@pytest.mark.parametrize(
+    ("default", "filename", "extra", "expected"),
+    [
+        ("txt", None, [], "txt"),
+        ("md", None, [], "md"),
+        ("txt", "notes.md", [], "md"),
+        ("md", "notes.txt", [], "txt"),
+        ("txt", None, ["--format", "md"], "md"),
+        ("md", "notes", [], "md"),
+        ("txt", "notes.txt", ["--force"], "txt"),
+    ],
+)
+def test_cli_exports_selected_format(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    default: str,
+    filename: str | None,
+    extra: list[str],
+    expected: str,
+) -> None:
+    from matnocr.engine import OcrPageResult, PageTiming
+    from matnocr.settings import save_default_output_format
+
+    save_default_output_format(OutputFormat(default))
+    source = tmp_path / "book.pdf"
+    source.touch()
+    monkeypatch.setattr(cli, "resolve_language", lambda _tag: "ar-SA")
+
+    async def fake_recognize(*_args: object, **_kwargs: object) -> OcrRunResult:
+        return OcrRunResult(
+            source,
+            "ar-SA",
+            300,
+            (OcrPageResult(9, "نص عربي", 100, 100, "ORIGINAL", PageTiming(0, 0, 0)),),
+            0,
+            0,
+            0,
+            1,
+            0,
+        )
+
+    monkeypatch.setattr(cli, "recognize_pdf", fake_recognize)
+    args = [str(source), "--quiet", *extra]
+    if filename is not None:
+        args.extend(["-o", str(tmp_path / filename)])
+        if "--force" in extra:
+            (tmp_path / filename).write_text("previous export", encoding="utf-8")
+    result = runner.invoke(app, args)
+    assert result.exit_code == 0, result.output
+    assert result.stdout == ""
+    target = tmp_path / (filename or f"book_matnocr_ar_300dpi.{expected}")
+    if not target.suffix:
+        target = target.with_suffix(f".{expected}")
+    text = target.read_text(encoding="utf-8")
+    assert "نص عربي" in text
+    assert ("# Page 9" if expected == "md" else "========== Page 9 ==========") in text
+
+
+@pytest.mark.parametrize(
+    "options", [["-o", "notes.pdf"], ["-o", "notes.md", "--format", "txt"]]
+)
+def test_invalid_output_format_is_rejected_before_ocr(options: list[str]) -> None:
+    source = Path(__file__).resolve().parents[2] / "prototype.py"
+    result = runner.invoke(app, [str(source), *options])
+    assert result.exit_code == 2
+    assert "--format/--output" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+@pytest.mark.parametrize("automatic", [False, True])
+def test_existing_output_is_rejected_before_ocr(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, automatic: bool
+) -> None:
+    source = tmp_path / "book.pdf"
+    source.touch()
+    destination = tmp_path / (
+        "book_matnocr_ar_300dpi.txt" if automatic else "existing.txt"
+    )
+    destination.write_text("keep this", encoding="utf-8")
+    monkeypatch.setattr(cli, "resolve_language", lambda _tag: "ar-SA")
+
+    async def unexpected_ocr(*_args: object, **_kwargs: object) -> None:
+        pytest.fail("OCR must not start for an existing output")
+
+    monkeypatch.setattr(cli, "recognize_pdf", unexpected_ocr)
+    args = [str(source), "--quiet"]
+    if not automatic:
+        args.extend(["-o", str(destination)])
+    result = runner.invoke(app, args)
+    assert result.exit_code == 1
+    assert result.stdout == ""
+    assert "--force" in result.stderr
+    assert destination.read_text(encoding="utf-8") == "keep this"
+
+
+def test_invalid_output_parent_is_a_clean_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "book.pdf"
+    source.touch()
+    monkeypatch.setattr(cli, "resolve_language", lambda _tag: "ar-SA")
+    result = runner.invoke(
+        app, [str(source), "-o", str(tmp_path / "missing" / "out.txt"), "--quiet"]
+    )
+    assert result.exit_code == 1
+    assert "Output directory does not exist" in result.stderr
     assert "Traceback" not in result.stderr

@@ -240,6 +240,7 @@ Schöne Terminal-Ausgabe ist erwünscht, darf aber Automatisierung nicht erschwe
 Deshalb:
 
 - `--quiet` respektieren
+- bestehende Ausgabedateien nur mit `--force` ersetzen
 - keine unnötigen Animationen in nicht-interaktiven Umgebungen
 - Exit Codes sinnvoll verwenden
 - Fehler nach `stderr`
@@ -268,6 +269,12 @@ he
 Nicht einfach den gesamten Seitenstring umdrehen.
 
 Die Sortierung muss zeilenweise und positionsbasiert bleiben.
+
+Die Ausgabe unterstützt TXT und einfaches Markdown. TXT ist der anfängliche
+Standard; `matnocr output default txt|md` speichert die Präferenz. Die Endung
+von `-o` hat Vorrang vor dem gespeicherten Standard; widersprüchliche explizite
+Formatangaben werden abgelehnt. PDF-Export (Text-PDF und durchsuchbare Scan-PDF)
+ist als Ziel für v0.2 dokumentiert, noch nicht implementiert.
 
 ## 11. Raw OCR nicht still korrigieren
 
@@ -397,8 +404,11 @@ coverage.py
 ```
 
 Ruff, ty, pytest und pytest-cov sind bereits als Dev Dependencies eingetragen.
-Das bedeutet nicht, dass ihre Konfiguration und alle Prüfungen abgeschlossen
-sind; hierfür `TODO.md` beachten.
+Die Konfiguration steht in `pyproject.toml`: Ruff prüft aktiven Code und Tests
+(ohne die historischen Experimente `prototype.py` und `add_new_white_page.py`),
+ty prüft `src/` und `tests/` für Python 3.11 unter Windows. Unit- und mit
+`integration` markierte Integrationstests sind getrennt. Aktuellen Status und
+weitere Aufgaben in `TODO.md` beachten.
 
 Vor Einführung alternativer Tools prüfen, ob ein bereits vorgesehenes Werkzeug denselben Zweck erfüllt.
 
@@ -526,7 +536,7 @@ Nicht ohne klare Entscheidung vorziehen:
 - Batch-System
 - Resume-System
 - parallele OCR
-- Markdown-Rekonstruktion
+- komplexe Markdown-Rekonstruktion (einfache Ausgabe mit `# Page x` ist bereits implementiert)
 
 Diese Features gehören überwiegend in spätere Roadmap-Phasen.
 

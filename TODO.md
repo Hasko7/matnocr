@@ -258,7 +258,14 @@ OCR  █████████████████████████
 
 ### 16. Output v0.1
 
-- [x] TXT als Standard
+- [x] TXT als anfänglichen Standard beibehalten
+- [x] einfaches Markdown mit `# Page <PDF-Seitennummer>` aus v0.2 vorziehen
+- [x] Standardausgabe mit `output default txt|md` speichern und mit `output` anzeigen
+- [x] verfügbare Ausgabeformate und Beispiele bei `output` und `output --help` anzeigen
+- [x] einmalige Formatwahl mit `--format txt|md`
+- [x] Format anhand von `-o`-Endung wählen (`.txt`, `.md`, `.markdown`)
+- [x] Endungslosen Zielen gewählte Formatendung ergänzen; ungültige und widersprüchliche Endungen vor OCR ablehnen
+- [x] Format- und Spracheinstellungen beim Speichern gegenseitig erhalten
 - [x] Seitenmarker beibehalten
 - [x] UTF-8 schreiben
 - [x] automatischen Dateinamen erzeugen
@@ -266,34 +273,34 @@ OCR  █████████████████████████
 - [x] Absatzerkennung über Bounding-Boxes als Standardmodus
 - [x] Layout mit `--no-layout` abschalten und Text fortlaufend verbinden
 - [x] Layoutmodus ohne zweite OCR-Runde und ohne temporäre Rasterdateien
-- [ ] existierende Dateien nicht versehentlich überschreiben
-- [ ] Verhalten für `--output` definieren
-- [ ] Fehler bei nicht beschreibbaren Pfaden sauber behandeln
+- [x] existierende Dateien nicht versehentlich überschreiben
+- [x] Verhalten für `--output` und Formatwahl definieren (mit `--force` als explizitem Überschreibschutz)
+- [x] Fehler bei nicht beschreibbaren Pfaden sauber behandeln
 
 ## Phase 3 – Qualität und Tests
 
 ### 17. Ruff einrichten
 
 - [x] Ruff als Dev Dependency
-- [ ] `ruff check`
-- [ ] `ruff format`
-- [ ] sinnvolle Regeln in `pyproject.toml`
+- [x] `ruff check`
+- [x] `ruff format`
+- [x] sinnvolle Regeln in `pyproject.toml`
 - [x] lokale Formatierung dokumentieren (`README.md`)
 
 ### 18. Type Checking
 
 - [x] `ty` als Dev Dependency eintragen
-- [ ] `ty` im Projekt vollständig testen
-- [ ] `ty check` konfigurieren
-- [ ] PyWinRT-Typing-Probleme prüfen
-- [ ] nötige Ausnahmen dokumentieren
+- [x] `ty` im Projekt vollständig testen
+- [x] `ty check` konfigurieren
+- [x] PyWinRT-Typing-Probleme prüfen
+- [x] nötige Ausnahmen dokumentieren
 
 ### 19. pytest einrichten
 
 - [x] pytest und pytest-cov als Dev Dependencies eintragen
 - [x] Unit-Test-Struktur erstellen
-- [ ] Integration-Test-Struktur erstellen
-- [ ] pytest konfigurieren
+- [x] Integration-Test-Struktur erstellen
+- [x] pytest konfigurieren
 
 ### 20. Unit Tests
 
@@ -308,17 +315,17 @@ OCR  █████████████████████████
 
 ### 21. Integration Tests
 
-- [ ] PDF-Renderer
-- [ ] Direct-RAM-Pipeline
-- [ ] SoftwareBitmap-Erstellung
-- [ ] Windows OCR
-- [ ] reale OCR auf kleinem Testdokument
-- [ ] Test überspringen, wenn notwendige OCR-Sprache fehlt
-- [ ] Testdaten lizenzrechtlich sauber halten
+- [x] PDF-Renderer
+- [x] Direct-RAM-Pipeline
+- [x] SoftwareBitmap-Erstellung
+- [x] Windows OCR
+- [x] reale OCR auf kleinem Testdokument
+- [x] Test überspringen, wenn notwendige OCR-Sprache fehlt
+- [x] Testdaten lizenzrechtlich sauber halten
 
 ### 22. Eigene Test-PDFs erstellen
 
-- [ ] synthetische englische PDF
+- [x] synthetische englische PDF (zur Testlaufzeit erzeugt)
 - [ ] synthetische deutsche PDF
 - [ ] synthetische arabische PDF
 - [ ] Public-Domain-Testtext möglich
@@ -606,7 +613,12 @@ v0.1 soll enthalten:
 
 ### 42. Zusätzliche Ausgabeformate
 
-- [ ] Markdown
+- [x] einfaches Markdown nach v0.1 vorgezogen (Seitenüberschriften und gespeicherter Standard)
+- [ ] PDF-Export nach der ersten öffentlichen Veröffentlichung ergänzen (Ziel v0.2)
+- [ ] Text-PDF: neues PDF mit sichtbarem OCR-Text, Arabisch-/RTL-Darstellung, Schriften und Seitenumbrüchen
+- [ ] Durchsuchbare Scan-PDF: Originalseiten mit unsichtbarer OCR-Textebene zum Suchen und Kopieren
+- [ ] PDF-Backend und Abhängigkeiten einschließlich Lizenz- und Distribution-Folgen prüfen
+- [ ] PDF-Export für beide Varianten mit arabischem Text und Such-/Kopierverhalten testen
 - [ ] JSON
 - [ ] JSONL
 - [ ] Bounding Boxes exportieren
