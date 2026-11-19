@@ -219,9 +219,14 @@ After the initial public release, planned additions include:
 Development uses uv, Ruff, ty, and pytest. Integration tests generate original
 English, German, and Arabic documents locally, with language-dependent skips.
 
-Start with the [development guide](docs/development.md). Project architecture,
+Start with the [contribution guidelines](CONTRIBUTING.md) and
+[Code of Conduct](CODE_OF_CONDUCT.md). The [development guide](docs/development.md)
+covers local setup and checks. Project architecture,
 working rules, and the detailed task list are maintained in
 [PROJECT.md](PROJECT.md), [AGENTS.md](AGENTS.md), and [TODO.md](TODO.md).
+
+For vulnerabilities, follow the [security policy](SECURITY.md). Notable changes
+are recorded in the [changelog](CHANGELOG.md).
 
 ## License
 

@@ -1,0 +1,84 @@
+name: OCR quality report
+description: Report recognition, Arabic/RTL word-order, or layout problems.
+title: "[OCR]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Compare the same PDF page and settings. Keep actual OCR output unchanged;
+        put corrections in the expected-text field. Share only samples you may
+        publish, preferably an original or public-domain example.
+  - type: input
+    id: version
+    attributes:
+      label: MatnOCR version or commit
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and build
+      description: Run winver to find the build number.
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Resolved OCR language
+      description: Use the full installed language tag shown by MatnOCR.
+      placeholder: ar-SA
+    validations:
+      required: true
+  - type: dropdown
+    id: dpi
+    attributes:
+      label: DPI
+      options:
+        - "200"
+        - "250"
+        - "300"
+    validations:
+      required: true
+  - type: dropdown
+    id: pdf-type
+    attributes:
+      label: PDF type
+      options:
+        - Scanned page (one large image)
+        - Scanned page (multiple images)
+        - Mixed text and images
+        - Digitally generated text
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Exact command and affected PDF pages
+      description: Include --lang, --dpi or --quality, --pages, output format, and whether --no-layout was used. Use physical PDF page numbers.
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Page sample
+      description: Attach a shareable page or cropped screenshot, or explain how to reproduce it without a private file.
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected text or reading order
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual unedited OCR output
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Additional context
+      description: Mention rotation, columns, footnotes, mixed scripts, scan quality, and whether changing DPI helps.

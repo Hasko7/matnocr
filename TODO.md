@@ -363,21 +363,21 @@ README enthält:
 ### 24. Open-Source-Dateien
 
 - [x] `LICENSE`
-- [ ] `CONTRIBUTING.md`
-- [ ] `CHANGELOG.md`
-- [ ] `SECURITY.md`
-- [ ] `CODE_OF_CONDUCT.md`
+- [x] `CONTRIBUTING.md`
+- [x] `CHANGELOG.md`
+- [x] `SECURITY.md`
+- [x] `CODE_OF_CONDUCT.md`
 - [x] `PROJECT.md`
 - [x] `TODO.md`
 
 ### 25. GitHub Templates
 
-- [ ] Bug Report Template
-- [ ] Feature Request Template
-- [ ] Pull Request Template
-- [ ] eventuell OCR Quality Report Template
+- [x] Bug Report Template
+- [x] Feature Request Template
+- [x] Pull Request Template
+- [x] OCR Quality Report Template
 
-OCR Quality Report könnte abfragen:
+OCR Quality Report fragt unter anderem ab:
 
 ```text
 language
@@ -400,6 +400,9 @@ actual OCR
 - [ ] Default Branch `main`
 - [ ] lokalen Git-Remote setzen
 - [ ] ersten Commit pushen
+- [ ] Issue-Formulare und PR-Vorlage auf GitHub prüfen
+- [ ] privates Vulnerability Reporting aktivieren und den Meldeweg in `SECURITY.md` prüfen
+- [ ] privaten Moderationskontakt festlegen und in `CODE_OF_CONDUCT.md` veröffentlichen
 
 Mögliche Topics:
 

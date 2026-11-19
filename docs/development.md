@@ -2,6 +2,11 @@
 
 [Back to the README](../README.md)
 
+For issue reporting, pull requests, and contribution expectations, start with
+[CONTRIBUTING.md](../CONTRIBUTING.md) and the
+[Code of Conduct](../CODE_OF_CONDUCT.md). Follow [SECURITY.md](../SECURITY.md)
+for vulnerability reports.
+
 Before making substantial changes, read [AGENTS.md](../AGENTS.md),
 [PROJECT.md](../PROJECT.md), and [TODO.md](../TODO.md). Keep changes small and easy
 to review, cover Arabic/RTL examples, and measure performance before and after

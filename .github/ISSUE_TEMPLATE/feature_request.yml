@@ -1,0 +1,32 @@
+name: Feature request
+description: Describe a problem and propose an improvement.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the README roadmap, TODO.md, and existing issues first.
+        MatnOCR prioritizes fast, local, scriptable Windows OCR with Arabic/RTL support.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the task and who would benefit, with a concrete example.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Include an example command or output if applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
+  - type: textarea
+    id: impact
+    attributes:
+      label: Scope and tradeoffs
+      description: Mention related roadmap items, dependencies, performance, or RTL considerations if known.

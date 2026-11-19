@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a CLI, installation, processing, or output failure.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues before reporting. Use the OCR quality form for
+        recognition or word-order problems. For vulnerabilities, follow
+        SECURITY.md; do not publish exploit details here.
+        Remove private paths and document contents from logs and samples.
+  - type: input
+    id: version
+    attributes:
+      label: MatnOCR version or commit
+      description: Run matnocr --version; include the commit if using a checkout.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Windows and Python versions
+      description: Include the Windows build (winver) and python --version.
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method
+      options:
+        - uv run from a checkout
+        - uv tool (editable)
+        - uv tool (regular)
+        - Other (describe below)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps and exact command
+      description: Provide a minimal reproducer and mention relevant saved settings.
+      placeholder: "matnocr book.pdf --lang ar --pages 1 -o result.md"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and error output
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics and optional sample
+      description: |
+        Include relevant matnocr doctor and matnocr languages output. Attach a
+        minimal original or shareable sample if useful; redact private details.
