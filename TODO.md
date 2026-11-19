@@ -73,7 +73,7 @@ Begründung:
 - [x] `LICENSE` erstellen
 - [x] Drittanbieter-Lizenzpflichten dokumentieren (`THIRD_PARTY_NOTICES.md`)
 - [x] Lizenz im `pyproject.toml` eintragen
-- [ ] Lizenzhinweise in README ergänzen *(sobald README angelegt wird)*
+- [x] Lizenzhinweise in README ergänzen
 - [ ] bei Windows-Binärreleases PDFium- und Third-Party-Lizenzdateien mit ausliefern
 
 Lizenzentscheidung:
@@ -94,12 +94,12 @@ ty                     MIT
 pytest                 MIT
 ```
 
-Für `pyproject.toml` später verwenden:
+In `pyproject.toml` konfiguriert:
 
 ```toml
 [project]
 license = "Apache-2.0"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 ```
 
 ## Phase 1 – Projekt sauber aufsetzen
@@ -274,21 +274,23 @@ OCR  █████████████████████████
 
 ### 17. Ruff einrichten
 
-- [ ] Ruff als Dev Dependency
+- [x] Ruff als Dev Dependency
 - [ ] `ruff check`
 - [ ] `ruff format`
 - [ ] sinnvolle Regeln in `pyproject.toml`
-- [ ] lokale Formatierung dokumentieren
+- [x] lokale Formatierung dokumentieren (`README.md`)
 
 ### 18. Type Checking
 
-- [ ] `ty` als Dev Dependency testen
+- [x] `ty` als Dev Dependency eintragen
+- [ ] `ty` im Projekt vollständig testen
 - [ ] `ty check` konfigurieren
 - [ ] PyWinRT-Typing-Probleme prüfen
 - [ ] nötige Ausnahmen dokumentieren
 
 ### 19. pytest einrichten
 
+- [x] pytest und pytest-cov als Dev Dependencies eintragen
 - [x] Unit-Test-Struktur erstellen
 - [ ] Integration-Test-Struktur erstellen
 - [ ] pytest konfigurieren
@@ -326,31 +328,31 @@ OCR  █████████████████████████
 
 ### 23. README schreiben
 
-README soll mindestens enthalten:
+README enthält:
 
-- [ ] Projektbeschreibung
-- [ ] Screenshot / CLI-Beispiel
-- [ ] Features
-- [ ] Installation
-- [ ] Quick Start
-- [ ] Sprachen
-- [ ] Windows-OCR-Sprachpakete
-- [ ] Page Ranges
-- [ ] DPI / Quality Modes
-- [ ] Benchmarks
-- [ ] Limitations
-- [ ] Lizenz
-- [ ] Contributing
+- [x] Projektbeschreibung
+- [x] Screenshot / CLI-Beispiel
+- [x] Features
+- [x] Installation
+- [x] Quick Start
+- [x] Sprachen
+- [x] Windows-OCR-Sprachpakete
+- [x] Page Ranges
+- [x] DPI / Quality Modes
+- [x] Benchmarks
+- [x] Limitations
+- [x] Lizenz
+- [x] Contributing
 
 ### 24. Open-Source-Dateien
 
-- [ ] `LICENSE`
+- [x] `LICENSE`
 - [ ] `CONTRIBUTING.md`
 - [ ] `CHANGELOG.md`
 - [ ] `SECURITY.md`
 - [ ] `CODE_OF_CONDUCT.md`
-- [ ] `PROJECT.md`
-- [ ] `TODO.md`
+- [x] `PROJECT.md`
+- [x] `TODO.md`
 
 ### 25. GitHub Templates
 

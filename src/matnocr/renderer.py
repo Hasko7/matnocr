@@ -115,6 +115,8 @@ def original_image_at_dpi(
     try:
         return pdfium_bitmap_to_software_bitmap(pdf_bitmap)
     finally:
+        # Conversion copies the pixels; no view of the PDFium buffer escapes.
+        pdf_bitmap.warn_on_close = False
         pdf_bitmap.close()
 
 

@@ -4,7 +4,7 @@
 
 Diese Datei enthält verbindliche Arbeitsregeln für KI-Agenten, Coding-Assistenten und automatisierte Entwicklungswerkzeuge, die an diesem Repository arbeiten.
 
-Das Projekt ist eine schnelle, lokale und Windows-native PDF-OCR-CLI mit besonderem Fokus auf arabische Bücher und RTL-Sprachen.
+MatnOCR (`matnocr`) ist eine schnelle, lokale und Windows-native PDF-OCR-CLI mit besonderem Fokus auf arabische Bücher und RTL-Sprachen.
 
 Bevor Änderungen vorgenommen werden, müssen die Projektziele, Architekturentscheidungen und die aktuelle Roadmap verstanden werden.
 
@@ -55,16 +55,18 @@ Nach Abschluss einer Aufgabe soll `TODO.md` aktualisiert werden, wenn dies sinnv
 
 Die Reihenfolge in `TODO.md` ist grundsätzlich maßgeblich.
 
-Insbesondere gelten aktuell als frühe Kernentscheidungen:
+Bereits abgeschlossen sind:
 
-1. Projektname festlegen
-2. `PyMuPDF` gegen `pypdfium2` benchmarken
-3. Lizenzstrategie festlegen
-4. sauberes Git-/uv-Projekt aufbauen
-5. Prototyp modularisieren
-6. CLI mit Typer + Rich bauen
-7. Tests und CI aufbauen
-8. GitHub/PyPI/Release-Pipeline einrichten
+1. Projektname: **MatnOCR**, Paket und CLI: `matnocr`
+2. Renderer-Vergleich und Auswahl: **pypdfium2 / PDFium**
+3. Projektlizenz: **Apache-2.0**
+4. Git-/uv-Projekt mit `src/`-Layout
+5. Modularisierung und wesentliche CLI-Funktionen mit Typer + Rich
+
+Die nächsten offenen Arbeiten betreffen insbesondere die sichere Dateiausgabe,
+Qualitätsprüfungen und Integrationstests. Dokumentation wurde begonnen;
+GitHub CI, PyPI und Release-Pipeline stehen noch aus. Einzelne Punkte sind
+phasenübergreifend bereits erledigt. Der Detailstatus in `TODO.md` ist maßgeblich.
 
 Ein Agent soll nicht eigenständig große spätere Features vorziehen, wenn dadurch diese Grundlagen übersprungen werden.
 
@@ -153,27 +155,18 @@ PDF
 
 Temporäre Rasterdateien sollen im normalen OCR-Pfad vermieden werden.
 
-## 6. PDF-Renderer ist noch nicht endgültig entschieden
+## 6. Gewählten PDF-Renderer beibehalten
 
-Aktuell wird `PyMuPDF` im Prototyp verwendet.
+Der gewählte und implementierte Renderer ist `pypdfium2` / PDFium.
+Der Vergleich mit dem früheren PyMuPDF-Prototyp bei 200, 250 und 300 DPI ist
+laut `TODO.md` abgeschlossen. Die Direct-RAM-Pipeline verwendet einen
+Originalscan-Fast-Path und vollständiges Seitenrendering als Fallback.
 
-Vor dem öffentlichen Release muss `pypdfium2` getestet werden.
-
-Ein Agent darf den Renderer nicht vorschnell als endgültig festschreiben.
-
-Zu vergleichen sind mindestens:
-
-- Rendering-Zeit
-- RAM-/Buffer-Konvertierung
-- Gesamtzeit
-- OCR-Ausgabe
-- Speicherverbrauch
-- Paketgröße
-- Distribution
-- Lizenzfolgen
-- 200 DPI
-- 250 DPI
-- 300 DPI
+Speicherverbrauch und Wheel-Größe sind noch zu vergleichen; diese Messungen
+sind für v0.1 nicht blockierend. Die Renderer-Entscheidung soll ohne klaren
+technischen Grund nicht neu aufgerollt werden. Ein späterer Wechsel muss
+Rendering, Buffer-Konvertierung, Gesamtzeit, OCR-Ausgabe, Speicherverbrauch,
+Paketgröße, Distribution und Lizenzfolgen berücksichtigen.
 
 ## 7. Lizenzfragen ernst nehmen
 
@@ -181,11 +174,13 @@ Vor Aufnahme neuer Runtime-Abhängigkeiten muss deren Lizenz geprüft werden.
 
 Besonders wichtig:
 
-- `PyMuPDF` hat relevante AGPL-/Commercial-Lizenzfolgen.
-- `pypdfium2` wird unter anderem deshalb als Alternative geprüft.
-- Die endgültige Projektlizenz ist noch nicht festgelegt.
+- Die festgelegte Projektlizenz ist **Apache-2.0** (`LICENSE`).
+- `pypdfium2` / PDFium ist der gewählte Renderer; PyMuPDF ist keine Runtime-Abhängigkeit.
+- PyMuPDF hätte relevante AGPL-/Commercial-Lizenzfolgen; nicht ungeprüft hinzufügen.
+- `THIRD_PARTY_NOTICES.md` dokumentiert die Drittanbieter-Pflichten.
+- Windows-Binärreleases müssen die vollständigen PDFium- und Drittanbieter-Lizenzdateien mitliefern.
 
-Kein Agent soll eigenständig `MIT`, `Apache-2.0`, `AGPL-3.0` oder eine andere Lizenz als endgültig festlegen, bevor die Renderer-Entscheidung getroffen wurde.
+Die bestehende Lizenzentscheidung nicht eigenständig ändern.
 
 Neue Abhängigkeiten sollen möglichst:
 
@@ -199,7 +194,7 @@ sein.
 
 ## 8. CLI-Architektur
 
-Für Version 0.1 ist derzeit vorgesehen:
+Für Version 0.1 ist bereits integriert:
 
 ```text
 Typer
@@ -231,11 +226,11 @@ Der CLI-Kern soll scriptbar bleiben.
 Beispiele:
 
 ```powershell
-PROJECTNAME book.pdf
-PROJECTNAME book.pdf --lang ar --dpi 300
-PROJECTNAME book.pdf --pages 30-50
-PROJECTNAME languages
-PROJECTNAME doctor
+matnocr book.pdf
+matnocr book.pdf --lang ar --dpi 300
+matnocr book.pdf --pages 30-50
+matnocr languages
+matnocr doctor
 ```
 
 ## 9. CLI muss sowohl für Menschen als auch für Skripte funktionieren
@@ -354,11 +349,11 @@ Qualitätsänderungen müssen anhand echter OCR-Ausgabe und nicht nur anhand Ges
 
 ## 14. Projektstruktur sauber halten
 
-Geplantes `src`-Layout:
+Aktuelles `src`-Layout:
 
 ```text
 src/
-└── PACKAGE/
+└── matnocr/
     ├── __init__.py
     ├── __main__.py
     ├── cli.py
@@ -369,6 +364,10 @@ src/
     ├── rtl.py
     ├── output.py
     ├── config.py
+    ├── doctor.py
+    ├── language_capabilities.py
+    ├── settings.py
+    ├── validation.py
     └── ui.py
 ```
 
@@ -385,7 +384,7 @@ Keine unnötig großen monolithischen Dateien erzeugen.
 
 ## 15. Python- und Tooling-Strategie
 
-Aktuell vorgesehen:
+Im Projekt konfiguriert:
 
 ```text
 Python >= 3.11
@@ -396,6 +395,10 @@ ty
 pytest
 coverage.py
 ```
+
+Ruff, ty, pytest und pytest-cov sind bereits als Dev Dependencies eingetragen.
+Das bedeutet nicht, dass ihre Konfiguration und alle Prüfungen abgeschlossen
+sind; hierfür `TODO.md` beachten.
 
 Vor Einführung alternativer Tools prüfen, ob ein bereits vorgesehenes Werkzeug denselben Zweck erfüllt.
 
@@ -489,19 +492,19 @@ Versionen dürfen nicht manuell an mehreren Stellen auseinanderlaufen.
 Geplante Installationswege:
 
 ```powershell
-uv tool install PROJECTNAME
+uv tool install matnocr
 ```
 
 alternativ:
 
 ```powershell
-pipx install PROJECTNAME
+pipx install matnocr
 ```
 
 und:
 
 ```powershell
-pip install PROJECTNAME
+pip install matnocr
 ```
 
 Zusätzlich sollen Windows-Binaries über GitHub Releases angeboten werden.

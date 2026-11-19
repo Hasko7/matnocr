@@ -1,4 +1,4 @@
-# Native Windows OCR PDF CLI – Project
+# MatnOCR – Project
 
 ## 1. Projektidee
 
@@ -132,49 +132,36 @@ Die OCR-Qualität blieb im Vergleich praktisch identisch, die Verarbeitung wurde
 
 ## 4. Aktueller PDF-Renderer
 
-Der aktuelle Prototyp verwendet:
+Der gewählte und implementierte Renderer ist `pypdfium2` auf Basis von PDFium.
+Der Vergleich mit PyMuPDF auf sechs arabischen Benchmark-Seiten bei 200, 250
+und 300 DPI ist laut `TODO.md` abgeschlossen. Rendering, Bitmap-Konvertierung,
+OCR-Zeit, Gesamtzeit und OCR-Ausgaben wurden verglichen. Die OCR-Qualität war
+praktisch auf PyMuPDF-Niveau; zugleich ermöglicht PDFium die gewählte
+permissive Projektlizenz Apache-2.0.
 
-```python
-PyMuPDF
-```
+Die Implementierung in `src/matnocr/renderer.py` verwendet zwei Pfade:
 
-PyMuPDF liefert sehr hohe Rendering-Geschwindigkeit und funktioniert mit der Direct-RAM-Pipeline sehr gut.
+- **Originalscan-Fast-Path:** Deckt ein eingebettetes Bild mindestens 70 % der
+  PDF-Seite ab, wird dieses Bild direkt bei der gewünschten DPI verarbeitet.
+- **Fallback:** Ohne geeignetes Scanbild oder bei einem Runtime-Fehler im
+  Fast-Path wird die vollständige PDF-Seite gerendert.
 
-Vor einer öffentlichen Veröffentlichung muss jedoch die Lizenzstrategie bewusst entschieden werden, da PyMuPDF AGPL/commercial dual-lizenziert ist.
+Beide Pfade kopieren BGRA-Pixel im RAM in ein Windows-`SoftwareBitmap`.
+Temporäre Rasterdateien und Pillow sind dafür nicht erforderlich. Das
+PDFium-Bitmap wird nach der Konvertierung explizit geschlossen. Im Fast-Path
+wird die allgemeine Warnung beim Schließen eines foreign-Bitmaps gezielt
+unterdrückt, da keine Ansicht seines Puffers an die OCR weitergegeben wird.
 
-### Zu prüfende Alternative
+Speicherverbrauch und Wheel-Größe müssen noch verglichen werden; diese
+Messungen sind laut Roadmap nicht blockierend für v0.1. Die vollständigen
+Drittanbieter-Lizenzdateien müssen vor Windows-Binärreleases mitgeliefert werden.
 
-```text
-pypdfium2
-```
+## 5. Historische Performance-Referenz
 
-`pypdfium2` verwendet Google PDFium und ist für ein permissiv lizenziertes Open-Source-Projekt interessant.
-
-Es soll deshalb ein reproduzierbarer Benchmark durchgeführt werden:
-
-```text
-PyMuPDF Direct RAM
-vs.
-pypdfium2 Direct RAM
-```
-
-Verglichen werden:
-
-- Rendering-Zeit
-- Bitmap-/Buffer-Konvertierung
-- gesamte OCR-Zeit
-- Speicherverbrauch
-- OCR-Ausgabe
-- Verhalten bei 200 / 250 / 300 DPI
-- Paketgröße
-- Installationsaufwand
-- Lizenzfolgen
-
-Erst danach wird der endgültige PDF-Renderer festgelegt.
-
-## 5. Aktuelle Performance
-
-Getestet wurde eine sechsseitige gescannte arabische PDF.
+Die folgenden Werte stammen vom früheren PyMuPDF-Direct-RAM-Prototyp mit einer
+sechsseitigen gescannten arabischen PDF. Sie sind lokale historische
+Referenzwerte, keine Messung der aktuellen pypdfium2-Paketversion. Der
+Release-Benchmark mit dokumentierter Hardware steht laut `TODO.md` noch aus.
 
 ### 200 DPI – Direct RAM
 
@@ -240,7 +227,7 @@ balanced  -> 250 DPI
 quality   -> 300 DPI
 ```
 
-Geplanter Standard:
+Aktueller Standard:
 
 ```text
 quality / 300 DPI
@@ -293,11 +280,11 @@ rekonstruiert:
 الأول اختلف أصحابنا الشافعية هل النية ركن في العبادات أو
 ```
 
-## 8. Geplantes CLI-Erlebnis
+## 8. Aktuelles CLI-Erlebnis
 
 Die Anwendung soll nicht wie ein simples Python-Skript wirken, sondern wie eine professionelle moderne CLI.
 
-Geplanter Stack:
+Implementierter Stack:
 
 ```text
 Typer
@@ -305,16 +292,17 @@ Typer
 Rich
 ```
 
-Typer soll übernehmen:
+Typer übernimmt:
 
 - Argument Parsing
 - Subcommands
 - Validation
 - Help
-- Shell Completion
 - Typ-basierte Parameterdefinition
 
-Rich soll übernehmen:
+Shell Completion ist derzeit deaktiviert (`add_completion=False`).
+
+Rich übernimmt:
 
 - Progress Bars
 - Tabellen
@@ -335,48 +323,48 @@ Das CLI-Design ist für Version 0.1 einheitlich festgelegt:
 - In CI, bei umgeleiteter Ausgabe, mit `NO_COLOR` oder bei `TERM=dumb` werden ANSI-Farben deaktiviert.
 - Fortschrittsanimationen laufen nur in einem interaktiven Terminal; `--quiet` unterdrückt sie vollständig.
 
-### Geplanter Standardaufruf
+### Standardaufruf
 
 ```powershell
-nativeocr book.pdf
+matnocr book.pdf
 ```
 
 ### Explizite Sprache und DPI
 
 ```powershell
-nativeocr book.pdf --lang ar --dpi 300
+matnocr book.pdf --lang ar --dpi 300
 ```
 
 ### Seitenbereich
 
 ```powershell
-nativeocr book.pdf --pages 30-50
+matnocr book.pdf --pages 30-50
 ```
 
 ### Mehrere Bereiche
 
 ```powershell
-nativeocr book.pdf --pages 1,5,20-35,100
+matnocr book.pdf --pages 1,5,20-35,100
 ```
 
 ### Presets
 
 ```powershell
-nativeocr book.pdf --quality fast
-nativeocr book.pdf --quality balanced
-nativeocr book.pdf --quality quality
+matnocr book.pdf --quality fast
+matnocr book.pdf --quality balanced
+matnocr book.pdf --quality quality
 ```
 
 ### Eigene Ausgabe
 
 ```powershell
-nativeocr book.pdf -o output.txt
+matnocr book.pdf -o output.txt
 ```
 
 ### Ruhiger Modus für Skripte
 
 ```powershell
-nativeocr book.pdf --quiet
+matnocr book.pdf --quiet
 ```
 
 ### Layout nicht beachten
@@ -385,20 +373,20 @@ nativeocr book.pdf --quiet
 matnocr book.pdf --no-layout
 ```
 
-## 9. Geplante Subcommands
+## 9. Aktuelle Subcommands
 
 ### OCR
 
 Standard:
 
 ```powershell
-nativeocr book.pdf
+matnocr book.pdf
 ```
 
 ### Sprachen anzeigen
 
 ```powershell
-nativeocr languages
+matnocr languages
 ```
 
 Beispiel:
@@ -449,13 +437,13 @@ Standardsprache gewählt wurde.
 ### Systemdiagnose
 
 ```powershell
-nativeocr doctor
+matnocr doctor
 ```
 
 Mögliche Ausgabe:
 
 ```text
-NativeOCR system check
+MatnOCR system check
 
 ✓ Windows supported
 ✓ Windows.Media.Ocr available
@@ -470,7 +458,7 @@ Ready.
 ### Version
 
 ```powershell
-nativeocr --version
+matnocr --version
 ```
 
 ## 10. Fehlerbehandlung
@@ -572,7 +560,7 @@ postprocessed OCR
 
 müssen klar unterscheidbar bleiben.
 
-## 13. Geplanter Python-Projektstack
+## 13. Aktueller Python-Projektstack
 
 ### Runtime
 
@@ -587,8 +575,6 @@ uv
 ```
 
 ### Build Backend
-
-Vorgesehen:
 
 ```text
 uv_build
@@ -610,12 +596,8 @@ Windows.Media.Ocr
 
 ### PDF
 
-Zu entscheiden:
-
 ```text
-PyMuPDF
-oder
-pypdfium2
+pypdfium2 / PDFium
 ```
 
 ### Tests
@@ -633,13 +615,16 @@ Ruff
 
 ### Type Checking
 
-Vorgesehen:
-
 ```text
 ty
 ```
 
-## 14. Geplante Projektstruktur
+Ruff, ty, pytest und pytest-cov (coverage.py) sind bereits in der
+Dev-Dependency-Gruppe von `pyproject.toml` eingetragen und in `uv.lock` erfasst.
+Die projektspezifische Konfiguration und vollständige Verifikation bleiben
+Aufgaben der Phase 3. Lokale Prüf- und Formatierungsbefehle stehen in `README.md`.
+
+## 14. Projektstruktur und geplanter Ausbau
 
 ```text
 project/
@@ -655,7 +640,7 @@ project/
 ├── TODO.md
 │
 ├── src/
-│   └── nativeocr/
+│   └── matnocr/
 │       ├── __init__.py
 │       ├── __main__.py
 │       ├── cli.py
@@ -666,6 +651,10 @@ project/
 │       ├── rtl.py
 │       ├── output.py
 │       ├── config.py
+│       ├── doctor.py
+│       ├── language_capabilities.py
+│       ├── settings.py
+│       ├── validation.py
 │       └── ui.py
 │
 ├── tests/
@@ -688,56 +677,47 @@ project/
         └── codeql.yml
 ```
 
-Der tatsächliche Paketname `nativeocr` ist hier nur ein Platzhalter. Der endgültige Projektname muss zuerst gewählt werden.
+Das Paket liegt unter `src/matnocr/`; Unit Tests sind unter `tests/unit/`
+vorhanden. Der Baum zeigt auch geplante Dateien: Integrationstests,
+GitHub-Workflows und weitere Open-Source-Dokumente sind noch offen. Den
+verbindlichen Umsetzungsstand beschreibt `TODO.md`.
 
 ## 15. Packaging und Installation
 
-Das Projekt soll als echtes Python-Paket gebaut werden.
+Das Projekt verwendet `uv_build` und ein `src/`-Layout für das Python-Paket.
 
-Geplanter Console Entry Point:
+Konfigurierter Console Entry Point:
 
 ```toml
 [project.scripts]
-PROJECTNAME = "package.cli:app"
+matnocr = "matnocr.cli:app"
 ```
 
-Dadurch wird aus:
-
-```powershell
-python ocr.py book.pdf
-```
-
-später:
-
-```powershell
-PROJECTNAME book.pdf
-```
+Der Console Entry Point startet `matnocr`; alternativ ist
+`python -m matnocr` verfügbar. Die vollständige Build- und Wheel-Prüfung bleibt
+Teil der Packaging-Roadmap.
 
 ## 16. Installation für Nutzer
 
-### Empfohlen für technisch versierte Nutzer
+Aktuell wird aus dem lokalen Checkout installiert. Mit installiertem uv:
 
 ```powershell
-uv tool install PROJECTNAME
+uv sync --locked
+uv run matnocr --help
 ```
 
-### Alternative
+Für einen eigenständigen CLI-Aufruf außerhalb der Projektumgebung:
 
 ```powershell
-pipx install PROJECTNAME
+uv tool install .
 ```
 
-### Klassisches pip
+Nach Änderungen am Checkout muss eine solche Tool-Installation aktualisiert
+werden. Die Entwicklung kann direkt mit `uv run matnocr` getestet werden.
 
-```powershell
-pip install PROJECTNAME
-```
-
-### Direkter Test von GitHub
-
-```powershell
-uv tool install git+https://github.com/USER/PROJECT.git
-```
+Nach einer späteren PyPI-Veröffentlichung sind `uv tool install matnocr`,
+`pipx install matnocr` und `pip install matnocr` vorgesehen. PyPI-Publishing und
+öffentliche GitHub-Releases sind laut Roadmap noch nicht eingerichtet.
 
 ## 17. Windows-Binary / GitHub Release
 
@@ -746,13 +726,13 @@ Zusätzlich zum Python-Paket soll ein fertiger Windows-Build angeboten werden.
 Geplant:
 
 ```text
-PROJECTNAME-windows-x64.zip
+matnocr-windows-x64.zip
 ```
 
 und eventuell:
 
 ```text
-PROJECTNAME-windows-x64.exe
+matnocr-windows-x64.exe
 ```
 
 Für Version 1 soll zunächst PyInstaller getestet werden.
@@ -902,7 +882,7 @@ Das Projekt soll später auf PyPI veröffentlicht werden.
 Beispiel:
 
 ```powershell
-uv tool install PROJECTNAME
+uv tool install matnocr
 ```
 
 Der PyPI-Release soll möglichst über Trusted Publishing / OIDC erfolgen, sodass keine langfristigen PyPI-API-Tokens als GitHub Secrets gespeichert werden müssen.
@@ -927,63 +907,31 @@ Windows ARM64
 
 ## 24. Lizenzstrategie
 
-Die Lizenz muss vor dem ersten öffentlichen Release bewusst entschieden werden.
+MatnOCR ist unter **Apache-2.0** lizenziert. Die Entscheidung wurde nach dem
+Renderer-Vergleich getroffen und ist in `LICENSE` sowie `pyproject.toml`
+festgehalten. PyMuPDF ist keine Runtime-Abhängigkeit des Pakets.
 
-Zwei denkbare Richtungen:
-
-### PyMuPDF behalten
-
-Dann muss die AGPL-Lizenzsituation berücksichtigt werden.
-
-Mögliche Projektlizenz:
-
-```text
-AGPL-3.0
-```
-
-### pypdfium2 verwenden
-
-Dann wäre ein permissiveres Projektmodell einfacher möglich, z. B.:
-
-```text
-MIT
-```
-
-oder:
-
-```text
-Apache-2.0
-```
-
-Die endgültige Entscheidung erfolgt erst nach Renderer-Benchmark und Lizenzprüfung.
+Die Lizenzen der Abhängigkeiten bleiben eigenständig. `THIRD_PARTY_NOTICES.md`
+dokumentiert insbesondere pypdfium2/PDFium, PyWinRT, Typer und Rich. Bei
+gebündelten Windows-Releases müssen die vollständigen PDFium- und
+Drittanbieter-Lizenzdateien der tatsächlich verwendeten Versionen beiliegen.
 
 ## 25. Projektname
 
-Der aktuelle Name ist noch nicht festgelegt.
-
-Der endgültige Name sollte:
-
-- kurz sein
-- gut aussprechbar sein
-- als CLI-Befehl funktionieren
-- nicht bereits auf PyPI belegt sein
-- nicht mit bestehenden GitHub-Projekten kollidieren
-- idealerweise OCR / PDF / native Windows / Geschwindigkeit vermitteln
-- auch für nicht-arabische Nutzer funktionieren
-- nicht zu stark nur auf Arabisch beschränkt sein
-
-Vor Festlegung müssen mindestens geprüft werden:
+Die Namensentscheidung ist abgeschlossen:
 
 ```text
-PyPI
-GitHub
-winget
-npm
-Cargo
-Suchmaschinen
+Brand:       MatnOCR
+PyPI:        matnocr
+CLI:         matnocr
+Python pkg:  matnocr
+GitHub repo: matnocr
+Executable:  matnocr.exe
 ```
 
-Der Name `winocr` soll nicht verwendet werden, da bereits Projekte mit diesem Namen existieren.
+Die Kollisionsprüfungen sind in Phase 0 von `TODO.md` als erledigt dokumentiert.
+Der festgelegte Name bedeutet noch keine erfolgte Veröffentlichung auf GitHub
+oder PyPI.
 
 ## 26. Positionierung
 
@@ -1062,7 +1010,7 @@ Noch nicht zwingend in v0.1:
 ### Batch-Verarbeitung
 
 ```powershell
-PROJECTNAME batch ./books
+matnocr batch ./books
 ```
 
 ### Resume
@@ -1072,12 +1020,14 @@ Abgebrochene große OCR-Jobs fortsetzen.
 ### Benchmark Command
 
 ```powershell
-PROJECTNAME benchmark book.pdf
+matnocr benchmark book.pdf
 ```
 
 ### Renderer Benchmark
 
-PyMuPDF / PDFium vergleichen.
+Der initiale PyMuPDF-/PDFium-Vergleich ist abgeschlossen. Weitere Messungen
+zu Speicherverbrauch und Wheel-Größe sowie wiederholbare Release-Benchmarks
+bleiben vorgesehen.
 
 ### Alternative OCR Engines
 
@@ -1133,7 +1083,7 @@ Für CI-Tests sollen stattdessen eigene oder Public-Domain-Testdokumente verwend
 Das langfristige Ziel ist eine Open-Source-Windows-CLI, mit der ein Nutzer beispielsweise nur Folgendes ausführen muss:
 
 ```powershell
-PROJECTNAME kitab.pdf --lang ar --pages 30-100
+matnocr kitab.pdf --lang ar --pages 30-100
 ```
 
 und innerhalb kurzer Zeit eine saubere Textdatei erhält.
