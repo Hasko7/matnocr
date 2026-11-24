@@ -98,10 +98,11 @@ languages without installing system capabilities or opening an administrative
 PowerShell. CLI unit tests use synthetic language discovery.
 
 The final `CI` job runs even if a matrix job fails or is skipped, and succeeds
-only when the Windows matrix succeeds. After the first successful GitHub run,
-require this check in the `main` ruleset. Do not require all possible OCR
-languages or assume that a configured Python matrix is already validated:
-inspect the first run and its skipped tests before marking compatibility tasks
-complete. The final gate uses Ubuntu only to combine results; all application
-checks run on Windows.
+only when the Windows matrix succeeds. It is required by the active `main`
+ruleset, which also requires branches to be up to date. The verified hosted
+matrix passes on Python 3.11–3.14 with 142 tests passing per version; German and
+Arabic OCR tests skip because the runner only provides `en-US`. Locally, all
+144 tests pass on Python 3.13 with those language packs installed. Inspect skips
+when evaluating future compatibility. The final gate uses Ubuntu only to combine
+results; all application checks run on Windows.
 

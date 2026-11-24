@@ -401,7 +401,7 @@ actual OCR
 - [x] lokalen Git-Remote setzen
 - [x] ersten Commit pushen
 - [x] Issue-Formulare auf GitHub prüfen
-- [ ] PR-Vorlage beim ersten echten Pull Request auf GitHub prüfen
+- [x] PR-Vorlage beim ersten echten Pull Request auf GitHub prüfen (PR #1)
 - [x] privates Vulnerability Reporting aktivieren und den Meldeweg in `SECURITY.md` prüfen
 - [x] Moderationsmeldeweg in `CODE_OF_CONDUCT.md` festlegen: GitHub-Meldetools, bewusst keine öffentliche E-Mail-Adresse und kein direkter privater Projektkontakt
 
@@ -419,12 +419,19 @@ pdf-ocr
 offline-ocr
 ```
 
-### 27. Branch Protection später aktivieren
+### 27. Branch- und Release-Schutz aktivieren
 
 - [x] Pull Requests vor Merge
-- [ ] CI muss erfolgreich sein (Check `CI` nach erstem erfolgreichen GitHub-Lauf verpflichtend machen)
+- [x] CI muss erfolgreich sein (Check `CI` von GitHub Actions verpflichtend; Branch muss aktuell sein)
 - [x] versehentliches Force Push verhindern
-- [ ] Tags / Releases schützen
+- [x] Tags / Releases schützen
+- [x] aktives Tag-Ruleset `Protect version tags` für `v*`: Änderungen und Löschungen gesperrt, keine Bypass-Ausnahmen
+- [x] Release Immutability für zukünftige GitHub Releases aktivieren
+
+Neue Versions-Tags können weiterhin erstellt werden. Für Releases zuerst einen
+Entwurf mit allen Assets vorbereiten und erst anschließend veröffentlichen.
+Veröffentlichte Assets sind dann unveränderlich; Korrekturen erhalten eine neue
+Version. Einrichtung und Ablauf stehen in `docs/releases.md`.
 
 ## Phase 6 – GitHub CI
 
@@ -451,33 +458,35 @@ Schritte:
 - [x] gebauten Wheel installieren
 - [x] CLI Smoke Test
 
-Der Workflow ist implementiert und lokal unter Python 3.13 geprüft.
-Der erste ausgeführte Hosted-Testlauf zeigte CLI-Tests mit einer Abhängigkeit
-von der nicht versionierten `prototype.py` sowie von Typer erzwungene ANSI-Codes.
-Die Tests erzeugen nun eigene Eingabepfade; der Workflow deaktiviert erzwungene
-Terminalformatierung. Lokal bestehen damit alle 144 Tests auch mit den
-CI-Umgebungsvariablen. Der erfolgreiche Hosted-Wiederholungslauf steht noch aus.
+Der Workflow ist implementiert und auf GitHub für Python 3.11–3.14 erfolgreich
+geprüft. Der [erfolgreiche Lauf auf main](https://github.com/Hasko7/matnocr/actions/runs/45465791622)
+prüft alle vier Versionen einschließlich Build, frischer Wheel-Installation und
+CLI-Smoke-Tests. CLI-Tests erzeugen eigene Eingabepfade; erzwungene
+Terminalformatierung ist im Workflow deaktiviert.
 
-- [ ] ersten GitHub-Lauf auf dem PR prüfen (Matrix und echte Runner-Capabilities)
+- [x] ersten erfolgreichen GitHub-Lauf auf dem PR und auf main prüfen (Matrix und echte Runner-Capabilities)
 
 ### 29. Windows Runner
 
-- [x] Windows GitHub Runner konfigurieren (`windows-2025`; erster Hosted-Lauf noch offen)
+- [x] Windows GitHub Runner konfigurieren (`windows-2025`; Hosted-Lauf erfolgreich)
 - [x] Runner-Image-Familie festlegen (`windows-2025`; konkrete Image-Version im Actions-Log)
-- [ ] verfügbare Windows-OCR-Sprachen im ersten GitHub-Lauf untersuchen (Diagnose-Schritt konfiguriert)
+- [x] verfügbare Windows-OCR-Sprachen im ersten GitHub-Lauf untersuchen: `en-US`; Deutsch und Arabisch fehlen
 - [x] kleine Integrationstests im Workflow aktivieren
 - [x] OCR-Sprachabhängige Tests bei fehlender Runtime oder Sprache sauber skippen
 
 ### 30. Python CI Matrix
 
-Matrix 3.11–3.14 ist konfiguriert; erfolgreiche Hosted-Läufe noch prüfen:
+Matrix 3.11–3.14 ist auf GitHub erfolgreich geprüft:
 
-- [ ] Python 3.11
-- [ ] Python 3.12
-- [ ] Python 3.13
-- [ ] Python 3.14
+- [x] Python 3.11
+- [x] Python 3.12
+- [x] Python 3.13
+- [x] Python 3.14
 
-Nur nach erfolgreichem Test offiziell unterstützen.
+Im Hosted-Lauf bestehen pro Version 142 Tests; zwei OCR-Integrationstests werden
+wegen fehlender deutscher und arabischer Sprachpakete übersprungen. Lokal unter
+Python 3.13 bestehen mit diesen Sprachpaketen alle 144 Tests. Die Hosted-Matrix
+belegt damit keine reale deutsche oder arabische OCR auf allen Python-Versionen.
 
 ### 31. Security Automation
 
@@ -593,6 +602,7 @@ test
 - [ ] Versionen müssen überall identisch sein
 - [ ] Release nur aus getaggtem Commit
 - [ ] fehlerhafte Builds dürfen nicht veröffentlicht werden
+- [ ] alle Release-Assets einschließlich Checksums zuerst an einen Entwurf anhängen und erst danach unveränderlich veröffentlichen
 
 ## Phase 9 – v0.1.0 Release
 

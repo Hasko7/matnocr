@@ -7,6 +7,8 @@ development work, not a claim that a public release has been published.
 
 ### Added
 
+- Repository safeguards requiring CI before merging into `main`, protecting
+  version tags from updates/deletion, and enabling immutable future releases.
 - Windows-native PDF OCR through PDFium and `Windows.Media.Ocr`, with a
   Direct-RAM pipeline and a fast path for embedded scan images.
 - Dynamic OCR language discovery, short language-code resolution, saved default
