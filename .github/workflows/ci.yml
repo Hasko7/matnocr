@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows / Python ${{ matrix.python }}
+    runs-on: windows-2025
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONUTF8: "1"
+      # Typer otherwise forces ANSI styling when GITHUB_ACTIONS is set.
+      _TYPER_FORCE_DISABLE_TERMINAL: "1"
+      NO_COLOR: "1"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.12.19"
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install Python
+        run: uv python install "${{ matrix.python }}"
+
+      - name: Install locked dependencies
+        run: uv sync --locked --group dev
+
+      - name: Isolate MatnOCR settings
+        run: |
+          $configHome = Join-Path $env:RUNNER_TEMP 'matnocr-config'
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "MATNOCR_CONFIG_HOME=$configHome" -Encoding utf8
+
+      - name: Record runtime and OCR languages
+        run: uv run --no-sync python tools/ci_smoke.py --diagnostics-only
+
+      - name: Ruff check
+        run: uv run --no-sync ruff check .
+
+      - name: Ruff format
+        run: uv run --no-sync ruff format --check .
+
+      - name: Type check
+        run: uv run --no-sync ty check
+
+      - name: Unit and integration tests
+        run: uv run --no-sync pytest --cov=matnocr
+
+      - name: Build wheel and source distribution
+        run: uv build --out-dir "${{ runner.temp }}/matnocr-dist"
+
+      - name: Export locked runtime dependencies
+        run: uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "${{ runner.temp }}/matnocr-runtime.txt"
+
+      - name: Create fresh wheel environment
+        run: uv venv --python "${{ matrix.python }}" "${{ runner.temp }}/matnocr-wheel-env"
+
+      - name: Install locked runtime dependencies into wheel environment
+        run: uv pip sync --python "${{ runner.temp }}/matnocr-wheel-env/Scripts/python.exe" "${{ runner.temp }}/matnocr-runtime.txt"
+
+      - name: Install built wheel
+        run: |
+          $wheels = @(Get-ChildItem -LiteralPath '${{ runner.temp }}/matnocr-dist' -Filter '*.whl')
+          if ($wheels.Count -ne 1) { throw 'Expected exactly one built wheel.' }
+          uv pip install --no-deps --python '${{ runner.temp }}/matnocr-wheel-env/Scripts/python.exe' $wheels[0].FullName
+
+      - name: Smoke-test installed wheel and console command
+        run: |
+          & '${{ runner.temp }}/matnocr-wheel-env/Scripts/python.exe' -I tools/ci_smoke.py
+
+  ci:
+    name: CI
+    if: always()
+    needs: [windows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require all Windows jobs to succeed
+        env:
+          WINDOWS_RESULT: ${{ needs.windows.result }}
+        run: test "$WINDOWS_RESULT" = success

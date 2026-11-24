@@ -421,9 +421,9 @@ offline-ocr
 
 ### 27. Branch Protection später aktivieren
 
-- [ ] Pull Requests vor Merge
-- [ ] CI muss erfolgreich sein
-- [ ] versehentliches Force Push verhindern
+- [x] Pull Requests vor Merge
+- [ ] CI muss erfolgreich sein (Check `CI` nach erstem erfolgreichen GitHub-Lauf verpflichtend machen)
+- [x] versehentliches Force Push verhindern
 - [ ] Tags / Releases schützen
 
 ## Phase 6 – GitHub CI
@@ -439,29 +439,38 @@ pull_request
 
 Schritte:
 
-- [ ] Checkout
-- [ ] uv installieren
-- [ ] Python installieren
-- [ ] `uv sync --locked`
-- [ ] `ruff check`
-- [ ] `ruff format --check`
-- [ ] `ty check`
-- [ ] `pytest`
-- [ ] Package bauen
-- [ ] gebauten Wheel installieren
-- [ ] CLI Smoke Test
+- [x] Checkout
+- [x] uv installieren
+- [x] Python installieren
+- [x] `uv sync --locked`
+- [x] `ruff check`
+- [x] `ruff format --check`
+- [x] `ty check`
+- [x] `pytest`
+- [x] Package bauen
+- [x] gebauten Wheel installieren
+- [x] CLI Smoke Test
+
+Der Workflow ist implementiert und lokal unter Python 3.13 geprüft.
+Der erste ausgeführte Hosted-Testlauf zeigte CLI-Tests mit einer Abhängigkeit
+von der nicht versionierten `prototype.py` sowie von Typer erzwungene ANSI-Codes.
+Die Tests erzeugen nun eigene Eingabepfade; der Workflow deaktiviert erzwungene
+Terminalformatierung. Lokal bestehen damit alle 144 Tests auch mit den
+CI-Umgebungsvariablen. Der erfolgreiche Hosted-Wiederholungslauf steht noch aus.
+
+- [ ] ersten GitHub-Lauf auf dem PR prüfen (Matrix und echte Runner-Capabilities)
 
 ### 29. Windows Runner
 
-- [ ] Windows GitHub Runner verwenden
-- [ ] genaue Runner-Version festlegen
-- [ ] verfügbare Windows-OCR-Sprachen untersuchen
-- [ ] falls sinnvoll kleine Integrationstests aktivieren
-- [ ] OCR-Sprachabhängige Tests sauber skippen
+- [x] Windows GitHub Runner konfigurieren (`windows-2025`; erster Hosted-Lauf noch offen)
+- [x] Runner-Image-Familie festlegen (`windows-2025`; konkrete Image-Version im Actions-Log)
+- [ ] verfügbare Windows-OCR-Sprachen im ersten GitHub-Lauf untersuchen (Diagnose-Schritt konfiguriert)
+- [x] kleine Integrationstests im Workflow aktivieren
+- [x] OCR-Sprachabhängige Tests bei fehlender Runtime oder Sprache sauber skippen
 
 ### 30. Python CI Matrix
 
-Prüfen:
+Matrix 3.11–3.14 ist konfiguriert; erfolgreiche Hosted-Läufe noch prüfen:
 
 - [ ] Python 3.11
 - [ ] Python 3.12
@@ -474,8 +483,8 @@ Nur nach erfolgreichem Test offiziell unterstützen.
 
 - [ ] Dependabot
 - [ ] CodeQL
-- [ ] minimale GitHub-Action-Berechtigungen
-- [ ] Actions möglichst auf stabile Versionen / SHAs pinnen
+- [x] minimale GitHub-Action-Berechtigungen (`contents: read` im CI-Workflow)
+- [x] CI-Actions auf geprüfte Commit-SHAs und uv auf Version pinnen
 
 ## Phase 7 – Python Packaging / PyPI
 
@@ -497,11 +506,11 @@ Nur nach erfolgreichem Test offiziell unterstützen.
 
 ### 33. Build lokal testen
 
-- [ ] `uv build`
-- [ ] sdist prüfen
-- [ ] wheel prüfen
-- [ ] frische virtuelle Umgebung erstellen
-- [ ] wheel dort installieren
+- [x] `uv build`
+- [x] sdist prüfen
+- [x] wheel prüfen
+- [x] frische virtuelle Umgebung erstellen
+- [x] wheel dort installieren
 - [ ] CLI vollständig testen
 
 ### 34. TestPyPI

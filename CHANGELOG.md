@@ -22,6 +22,10 @@ development work, not a claim that a public release has been published.
   staged writes that preserve existing exports if replacement fails.
 - Unit tests, synthetic English/German/Arabic integration documents, and local
   Ruff, ty, pytest, and coverage configuration.
+- GitHub Actions CI for Python 3.11–3.14 on Windows Server 2025, including
+  locked dependencies, code checks, capability-aware integration tests, package
+  builds, and CLI smoke tests in a fresh wheel environment. A combined `CI`
+  check reports the overall matrix result for branch protection.
 - Usage and development documentation, screenshots, contributor guidance,
   security and conduct policies, and GitHub issue and pull request templates.
 
@@ -30,4 +34,4 @@ development work, not a claim that a public release has been published.
 - Suppressed the PDFium foreign-bitmap close warning in the scan fast path
   after verifying that OCR uses an independent pixel copy.
 
-Public PyPI releases, GitHub CI, and packaged Windows releases are still planned.
+Public PyPI releases and packaged Windows releases are still planned.

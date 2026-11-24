@@ -25,7 +25,12 @@ def pdfium() -> Any:
 def windows_ocr() -> Any:
     if sys.platform != "win32":
         pytest.skip("Windows OCR requires Windows")
-    return pytest.importorskip("winrt.windows.media.ocr")
+    module = pytest.importorskip("winrt.windows.media.ocr")
+    try:
+        tuple(module.OcrEngine.available_recognizer_languages)
+    except (OSError, RuntimeError) as error:
+        pytest.skip(f"Windows OCR runtime is unavailable: {error}")
+    return module
 
 
 @pytest.fixture

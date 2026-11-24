@@ -657,8 +657,8 @@ Ruff, ty, pytest, and pytest-cov (coverage.py) are already included in the
 `pyproject.toml` development dependency group and recorded in `uv.lock`.
 Ruff, ty, pytest, and branch coverage are configured in `pyproject.toml`.
 Ruff checks active code and tests; the historical experiments `prototype.py`
-and `add_new_white_page.py` are excluded. ty checks `src/` and `tests/` for
-Python 3.11 on Windows. The installed PyWinRT types require no global rule
+and `add_new_white_page.py` are excluded. ty checks `src/`, `tests/`, and
+`tools/` for Python 3.11 on Windows. The installed PyWinRT types require no global rule
 suppression; existing `Any` boundaries for native objects are explained in
 `README.md`. Local commands are documented there as well.
 
@@ -717,8 +717,8 @@ project/
 
 The package lives under `src/matnocr/`; unit tests are in `tests/unit/`, and
 integration tests are in `tests/integration/`. The tree also shows planned
-files: GitHub workflows are still pending. Community documents, issue forms,
-and the pull request template are present. `TODO.md` describes the authoritative
+files: the CI workflow is present; release and CodeQL workflows are still
+pending. Community documents, issue forms, and the pull request template are present. `TODO.md` describes the authoritative
 implementation status.
 
 ## 15. Packaging and Installation
@@ -733,8 +733,9 @@ matnocr = "matnocr.cli:app"
 ```
 
 The console entry point launches `matnocr`; `python -m matnocr` is also
-available. Full build and wheel verification remains part of the packaging
-roadmap.
+available. Local wheel/sdist builds, archive checks, fresh wheel installation,
+and CLI smoke checks have passed on Python 3.13. Validation on the GitHub runner
+and across the full Python matrix remains part of the CI and packaging roadmap.
 
 ## 16. Installation for Users
 
@@ -826,11 +827,19 @@ with:
 
 ## 19. CI – Continuous Integration
 
-CI should run through GitHub Actions.
+GitHub Actions CI is configured in `.github/workflows/ci.yml`. It runs on
+pushes to `main`, pull requests targeting `main`, and manual dispatch. The
+application jobs use `windows-2025` with Python 3.11, 3.12, 3.13, and 3.14.
+The first hosted run must still confirm compatibility and actual OCR capability
+availability; Windows Server language packs must not be assumed to match a
+Windows desktop.
 
-Because OCR is Windows-specific, at least one Windows runner is required.
+The workflow pins uv 0.12.19 and action commit SHAs, uses read-only repository
+permissions, and does not publish packages. A final `CI` job combines the Windows
+matrix results and can become the required branch-protection check after the
+first successful hosted run. This gate uses Ubuntu only to combine results.
 
-Planned workflow for pull requests and pushes:
+Configured workflow:
 
 ```text
 Checkout
@@ -848,7 +857,7 @@ Checkout
 
 ### Python Matrix
 
-Versions planned for evaluation:
+Configured CI versions, pending their first successful hosted evaluation:
 
 ```text
 3.11

@@ -12,7 +12,8 @@ features or changes to the renderer, OCR engine, dependencies, or packaging,
 open a feature request before implementation so the scope can be discussed.
 
 MatnOCR is in development. The package version is not evidence of a published
-release; see [CHANGELOG.md](CHANGELOG.md). CI and publishing remain planned work.
+release; see [CHANGELOG.md](CHANGELOG.md). The CI workflow is configured in
+`.github/workflows/ci.yml`; publishing remains planned work.
 
 ## Report an Issue
 

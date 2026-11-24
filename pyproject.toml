@@ -51,7 +51,7 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.ty.src]
-include = ["src", "tests"]
+include = ["src", "tests", "tools"]
 
 [tool.ty.environment]
 python-version = "3.11"
