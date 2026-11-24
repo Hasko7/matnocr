@@ -406,7 +406,7 @@ coverage.py
 Ruff, ty, pytest und pytest-cov sind bereits als Dev Dependencies eingetragen.
 Die Konfiguration steht in `pyproject.toml`: Ruff prüft aktiven Code und Tests
 (ohne die historischen Experimente `prototype.py` und `add_new_white_page.py`),
-ty prüft `src/` und `tests/` für Python 3.11 unter Windows. Unit- und mit
+ty prüft `src/`, `tests/` und `tools/` für Python 3.11 unter Windows. Unit- und mit
 `integration` markierte Integrationstests sind getrennt. Aktuellen Status und
 weitere Aufgaben in `TODO.md` beachten.
 

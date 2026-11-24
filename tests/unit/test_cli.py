@@ -22,6 +22,12 @@ runner = CliRunner()
 @pytest.fixture(autouse=True)
 def isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MATNOCR_CONFIG_HOME", str(tmp_path))
+    # CLI validation must not depend on a runner's installed OCR capabilities.
+    monkeypatch.setattr(
+        "matnocr.languages.get_available_languages",
+        lambda: (OcrLanguage("ar-SA", "Arabic", "Arabic"),),
+    )
+    monkeypatch.setattr(cli, "get_language_display_name", lambda _tag: "Arabic")
 
 
 def test_help_is_available() -> None:

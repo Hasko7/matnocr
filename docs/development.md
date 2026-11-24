@@ -47,7 +47,7 @@ Ruff, ty, pytest, and branch coverage are configured in `pyproject.toml`.
 Ruff targets Python 3.11 and checks common syntax errors, undefined names,
 imports, modernization, and common bug patterns. Its formatter uses 88 columns
 and double quotes. The historical `prototype.py` and `add_new_white_page.py`
-experiments are excluded from Ruff; ty checks `src/` and `tests/`, targeting
+experiments are excluded from Ruff; ty checks `src/`, `tests/`, and `tools/`, targeting
 Python 3.11 on Windows. These scripts are not distributed application code.
 
 The installed PyWinRT typing works with ty without global rule suppression or
@@ -69,7 +69,39 @@ and the locally installed Arial font; affected tests skip if these capabilities
 are unavailable. No new package dependencies or bundled font files are needed.
 No language packs are installed by tests, and no private book pages are used.
 See [the integration test notes](../tests/integration/README.md) for details.
-The full suite currently requires Windows
-because application modules imported by unit tests use WinRT. GitHub CI remains
-a later roadmap task.
+The full suite currently requires Windows because application modules imported
+by unit tests use WinRT.
+
+## GitHub Actions CI
+
+The workflow in [ci.yml](../.github/workflows/ci.yml) runs on pushes to `main`,
+pull requests targeting `main`, and manual dispatch. Each matrix job uses
+`windows-2025` with Python 3.11, 3.12, 3.13, or 3.14. setup-uv selects the matrix
+interpreter independently of the local `.python-version` file. uv is pinned to
+0.12.19, and third-party actions are pinned to commit SHAs. The workflow has
+read-only repository permissions and does not publish artifacts or use deployment
+secrets.
+
+Every Windows job synchronizes `uv.lock`, logs the runtime and available OCR
+languages, runs Ruff, formatting, ty, and all tests with coverage, and builds a
+wheel and source distribution. It then creates a separate environment, installs
+the locked runtime dependencies and built wheel, and runs `tools/ci_smoke.py`
+with isolated Python imports. The smoke test verifies that the imported package
+lives in that environment, checks CLI help/version output, and invokes the
+installed `matnocr.exe` console entry point. It deliberately uses OCR-command
+help rather than requiring an OCR engine for help on a server runner.
+
+OCR capabilities on Windows Server runners may differ from a desktop Windows
+installation. Integration tests skip an unavailable OCR runtime or missing
+language pack and report the reasons. The diagnostics step records the actual
+languages without installing system capabilities or opening an administrative
+PowerShell. CLI unit tests use synthetic language discovery.
+
+The final `CI` job runs even if a matrix job fails or is skipped, and succeeds
+only when the Windows matrix succeeds. After the first successful GitHub run,
+require this check in the `main` ruleset. Do not require all possible OCR
+languages or assume that a configured Python matrix is already validated:
+inspect the first run and its skipped tests before marking compatibility tasks
+complete. The final gate uses Ubuntu only to combine results; all application
+checks run on Windows.
 
