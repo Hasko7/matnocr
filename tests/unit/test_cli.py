@@ -19,6 +19,14 @@ from matnocr.languages import LanguageNotInstalledError, OcrLanguage
 runner = CliRunner()
 
 
+@pytest.fixture
+def existing_file(tmp_path: Path) -> Path:
+    """Supply an input path for CLI validation; PDF/OCR access is mocked."""
+    source = tmp_path / "input.pdf"
+    source.touch()
+    return source
+
+
 @pytest.fixture(autouse=True)
 def isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MATNOCR_CONFIG_HOME", str(tmp_path))
@@ -142,8 +150,7 @@ def test_pdf_argument_must_exist() -> None:
     assert "does not exist" in result.stderr
 
 
-def test_invalid_page_selection_is_reported() -> None:
-    existing_file = Path(__file__).resolve().parents[2] / "prototype.py"
+def test_invalid_page_selection_is_reported(existing_file: Path) -> None:
 
     result = runner.invoke(app, [str(existing_file), "--pages", "8-3"])
 
@@ -151,8 +158,9 @@ def test_invalid_page_selection_is_reported() -> None:
     assert "Page range must be ascending; got 8-3." in result.stderr
 
 
-def test_page_count_prints_only_the_number(monkeypatch: pytest.MonkeyPatch) -> None:
-    existing_file = Path(__file__).resolve().parents[2] / "prototype.py"
+def test_page_count_prints_only_the_number(
+    existing_file: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr("matnocr.cli.get_pdf_page_count", lambda _path: 6)
 
     result = runner.invoke(app, [str(existing_file), "--page-count"])
@@ -161,8 +169,7 @@ def test_page_count_prints_only_the_number(monkeypatch: pytest.MonkeyPatch) -> N
     assert result.stdout == "6\n"
 
 
-def test_page_count_rejects_page_selection() -> None:
-    existing_file = Path(__file__).resolve().parents[2] / "prototype.py"
+def test_page_count_rejects_page_selection(existing_file: Path) -> None:
 
     result = runner.invoke(
         app,
@@ -182,8 +189,7 @@ def test_version_does_not_require_a_pdf() -> None:
     assert result.stdout == f"{version('matnocr')}\n"
 
 
-def test_dpi_and_quality_cannot_be_combined() -> None:
-    existing_file = Path(__file__).resolve().parents[2] / "prototype.py"
+def test_dpi_and_quality_cannot_be_combined(existing_file: Path) -> None:
 
     result = runner.invoke(
         app,
@@ -194,8 +200,9 @@ def test_dpi_and_quality_cannot_be_combined() -> None:
     assert "--dpi and --quality cannot be combined." in result.stderr
 
 
-def test_quality_output_and_quiet_options(monkeypatch: pytest.MonkeyPatch) -> None:
-    existing_file = Path(__file__).resolve().parents[2] / "prototype.py"
+def test_quality_output_and_quiet_options(
+    existing_file: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     output_path = Path.cwd() / "chosen-output.txt"
     captured: dict[str, object] = {}
 
@@ -303,9 +310,9 @@ def test_languages_command_shows_installed_languages(
 
 
 def test_missing_ocr_language_has_an_actionable_error(
+    existing_file: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    existing_file = Path(__file__).resolve().parents[2] / "prototype.py"
     monkeypatch.setattr(cli, "load_default_language", lambda: "en")
 
     def missing_language(_requested: str) -> str:
@@ -425,9 +432,9 @@ def test_doctor_command_reports_success(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_output_write_failure_is_a_clean_stderr_error(
+    existing_file: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    existing_file = Path(__file__).resolve().parents[2] / "prototype.py"
     monkeypatch.setattr(cli, "resolve_language", lambda _language: "ar-SA")
 
     async def fake_recognize_pdf(
@@ -553,9 +560,10 @@ def test_cli_exports_selected_format(
 @pytest.mark.parametrize(
     "options", [["-o", "notes.pdf"], ["-o", "notes.md", "--format", "txt"]]
 )
-def test_invalid_output_format_is_rejected_before_ocr(options: list[str]) -> None:
-    source = Path(__file__).resolve().parents[2] / "prototype.py"
-    result = runner.invoke(app, [str(source), *options])
+def test_invalid_output_format_is_rejected_before_ocr(
+    existing_file: Path, options: list[str]
+) -> None:
+    result = runner.invoke(app, [str(existing_file), *options])
     assert result.exit_code == 2
     assert "--format/--output" in result.stderr
     assert "Traceback" not in result.stderr

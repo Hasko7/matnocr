@@ -452,6 +452,11 @@ Schritte:
 - [x] CLI Smoke Test
 
 Der Workflow ist implementiert und lokal unter Python 3.13 geprüft.
+Der erste ausgeführte Hosted-Testlauf zeigte CLI-Tests mit einer Abhängigkeit
+von der nicht versionierten `prototype.py` sowie von Typer erzwungene ANSI-Codes.
+Die Tests erzeugen nun eigene Eingabepfade; der Workflow deaktiviert erzwungene
+Terminalformatierung. Lokal bestehen damit alle 144 Tests auch mit den
+CI-Umgebungsvariablen. Der erfolgreiche Hosted-Wiederholungslauf steht noch aus.
 
 - [ ] ersten GitHub-Lauf auf dem PR prüfen (Matrix und echte Runner-Capabilities)
 
