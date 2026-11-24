@@ -28,7 +28,6 @@ jobs:
         shell: pwsh
     env:
       PYTHONUTF8: "1"
-      MATNOCR_CONFIG_HOME: ${{ runner.temp }}/matnocr-config
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -48,6 +47,11 @@ jobs:
 
       - name: Install locked dependencies
         run: uv sync --locked --group dev
+
+      - name: Isolate MatnOCR settings
+        run: |
+          $configHome = Join-Path $env:RUNNER_TEMP 'matnocr-config'
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "MATNOCR_CONFIG_HOME=$configHome" -Encoding utf8
 
       - name: Record runtime and OCR languages
         run: uv run --no-sync python tools/ci_smoke.py --diagnostics-only
