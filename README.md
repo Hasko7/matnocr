@@ -4,7 +4,7 @@ Fast, offline OCR for scanned PDFs on Windows. Built for Arabic books, with
 support for the OCR languages installed on your system. No cloud service or GPU
 required.
 
-**Status:** Development preview. Install from a local checkout today; PyPI
+**Status:** Development preview. Install directly from GitHub today; PyPI
 publishing and packaged Windows releases are planned.
 
 ![MatnOCR processing a PDF in Windows Terminal](docs/images/terminal.png)
@@ -20,22 +20,26 @@ publishing and packaged Windows releases are planned.
 
 ## Installation
 
-Requires Windows with `Windows.Media.Ocr`, Python 3.11 or later, uv, and an OCR
-language pack for the text you want to recognize. The full Python version matrix
-is still being validated.
+Requires Windows with `Windows.Media.Ocr` and an OCR language pack for your text.
+Python 3.11–3.14 is tested in CI.
 
-From a local checkout:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and
+[Git for Windows](https://git-scm.com/downloads/win), then open PowerShell:
 
 ```powershell
-uv tool install .
+uv tool install --python 3.13 "git+https://github.com/Hasko7/matnocr.git"
 matnocr doctor
 ```
 
-For development, use the project environment instead:
+uv downloads Python 3.13 if needed. No GitHub account or SSH setup is required.
+If `matnocr` is not found, run `uv tool update-shell` and reopen PowerShell.
+
+Alternatively, clone the repository and install locally:
 
 ```powershell
-uv sync --locked
-uv run matnocr --help
+git clone https://github.com/Hasko7/matnocr.git
+cd matnocr
+uv tool install --python 3.13 .
 ```
 
 See the [development guide](docs/development.md) for editable installation and
@@ -46,6 +50,9 @@ local checks.
 ```powershell
 # Show installed OCR languages
 matnocr languages
+
+# Install Arabic OCR if missing (Windows requests administrator approval)
+matnocr languages install ar-SA
 
 # Recognize an Arabic PDF
 matnocr book.pdf --lang ar

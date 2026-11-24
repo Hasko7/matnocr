@@ -350,6 +350,7 @@ README enthält:
 - [x] arabische Buchseite als `docs/images/book_page.png` mit unverändertem OCR-Beispiel ergänzen (Nutzer)
 - [x] Features
 - [x] Installation
+- [x] kurze GitHub-Installationsanleitung mit Voraussetzungen, lokalem Klonen und geprüftem Python-Status ergänzen
 - [x] Quick Start
 - [x] Sprachen
 - [x] Windows-OCR-Sprachpakete

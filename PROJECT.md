@@ -739,7 +739,15 @@ and CLI smoke checks have passed locally on Python 3.13 and on GitHub's
 
 ## 16. Installation for Users
 
-Installation currently uses a local checkout. With uv installed:
+Users can install directly from the public GitHub repository with uv and Git:
+
+```powershell
+uv tool install --python 3.13 "git+https://github.com/Hasko7/matnocr.git"
+matnocr doctor
+```
+
+uv downloads Python 3.13 if needed. A local checkout remains an alternative.
+For project development:
 
 ```powershell
 uv sync --locked
