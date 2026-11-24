@@ -28,26 +28,30 @@ Disagreement about a technical decision is fine; intimidation is not.
 For abusive content on GitHub, use the platform's reporting tools described in
 [Reporting abuse or spam](https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam).
 
-For a repository moderation concern, contact a maintainer through a private
-contact method they have published. If no such method is available, you may
-open a brief issue requesting a private moderation contact without describing
-the incident or identifying the people involved. A dedicated private project
-contact has not been established yet. GitHub's abuse reporting tools remain
-available without posting a public request.
+Use **Report content** on the relevant issue, pull request, or comment and
+choose **Report abuse to GitHub Support** when available. For a user profile,
+use **Block or Report** and then **Report abuse**. These reports go to GitHub
+Support, not directly to MatnOCR maintainers.
 
-Include relevant links and context through the private channel. Do not post
-private evidence or identifying information publicly. Anyone with a conflict
-of interest should not handle the report; use GitHub's reporting tools if the
-concern involves the person who would otherwise handle it.
+The project does not publish a moderation email address or offer a dedicated
+private maintainer reporting channel. Ordinary repository moderation questions
+can be raised in an issue, without incident details, private evidence, or
+identifying information. Public issues are not a private reporting channel.
+
+Provide relevant links and context through GitHub's reporting tools for
+sensitive abuse concerns, including concerns involving a maintainer. Security
+vulnerabilities have a separate reporting process in [SECURITY.md](SECURITY.md).
 
 ## Enforcement
 
 Maintainers may edit or remove inappropriate content, request changes in
 behavior, restrict participation, or temporarily or permanently block a
 participant. The response should reflect the behavior's severity, impact,
-and repetition. When practical, explain the decision privately and offer an
-opportunity to clarify misunderstandings.
+and repetition. When practical, explain decisions without disclosing private
+information and offer an opportunity to clarify misunderstandings.
 
 Treat reports and identifying details with discretion, sharing them only as
 needed to assess and address the concern. A participant may request a review
-through the same private channel. No fixed response deadline is promised.
+of a repository moderation decision in an issue without including sensitive
+details. GitHub handles reports submitted to GitHub Support under its own
+processes. No fixed response deadline is promised by this project.

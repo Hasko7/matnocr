@@ -393,16 +393,17 @@ actual OCR
 
 ### 26. GitHub Repository erstellen
 
-- [ ] Public Repository erstellen
-- [ ] Beschreibung setzen
-- [ ] Topics hinzufügen
-- [ ] Lizenz anzeigen lassen
-- [ ] Default Branch `main`
-- [ ] lokalen Git-Remote setzen
-- [ ] ersten Commit pushen
-- [ ] Issue-Formulare und PR-Vorlage auf GitHub prüfen
-- [ ] privates Vulnerability Reporting aktivieren und den Meldeweg in `SECURITY.md` prüfen
-- [ ] privaten Moderationskontakt festlegen und in `CODE_OF_CONDUCT.md` veröffentlichen
+- [x] Public Repository erstellen
+- [x] Beschreibung setzen
+- [x] Topics hinzufügen
+- [x] Lizenz anzeigen lassen
+- [x] Default Branch `main`
+- [x] lokalen Git-Remote setzen
+- [x] ersten Commit pushen
+- [x] Issue-Formulare auf GitHub prüfen
+- [ ] PR-Vorlage beim ersten echten Pull Request auf GitHub prüfen
+- [x] privates Vulnerability Reporting aktivieren und den Meldeweg in `SECURITY.md` prüfen
+- [x] Moderationsmeldeweg in `CODE_OF_CONDUCT.md` festlegen: GitHub-Meldetools, bewusst keine öffentliche E-Mail-Adresse und kein direkter privater Projektkontakt
 
 Mögliche Topics:
 
