@@ -734,8 +734,8 @@ matnocr = "matnocr.cli:app"
 
 The console entry point launches `matnocr`; `python -m matnocr` is also
 available. Local wheel/sdist builds, archive checks, fresh wheel installation,
-and CLI smoke checks have passed on Python 3.13. Validation on the GitHub runner
-and across the full Python matrix remains part of the CI and packaging roadmap.
+and CLI smoke checks have passed locally on Python 3.13 and on GitHub's
+`windows-2025` runner across Python 3.11–3.14. Publishing remains planned work.
 
 ## 16. Installation for Users
 
@@ -830,14 +830,16 @@ with:
 GitHub Actions CI is configured in `.github/workflows/ci.yml`. It runs on
 pushes to `main`, pull requests targeting `main`, and manual dispatch. The
 application jobs use `windows-2025` with Python 3.11, 3.12, 3.13, and 3.14.
-The first hosted run must still confirm compatibility and actual OCR capability
-availability; Windows Server language packs must not be assumed to match a
-Windows desktop.
+The hosted matrix has passed on all four Python versions. The verified runner
+provides `en-US`: 142 tests pass per version, and German and Arabic OCR tests
+skip their missing language packs. Locally, all 144 tests pass on Python 3.13
+with those packs installed. Hosted results do not establish real German or
+Arabic OCR compatibility on every Python version.
 
 The workflow pins uv 0.12.19 and action commit SHAs, uses read-only repository
 permissions, and does not publish packages. A final `CI` job combines the Windows
-matrix results and can become the required branch-protection check after the
-first successful hosted run. This gate uses Ubuntu only to combine results.
+matrix results and is required by the active `main` ruleset, with branches
+required to be up to date. This gate uses Ubuntu only to combine results.
 
 Configured workflow:
 
@@ -857,7 +859,7 @@ Checkout
 
 ### Python Matrix
 
-Configured CI versions, pending their first successful hosted evaluation:
+Successfully tested CI versions:
 
 ```text
 3.11
@@ -936,6 +938,14 @@ GitHub Release
 ```
 
 All artifacts for a version should come from exactly the same Git tag.
+
+The active `Protect version tags` ruleset blocks updates and deletion of `v*`
+tags without bypass exceptions; new tags can still be created. Release
+immutability is enabled for future GitHub releases. Prepare a draft with all
+assets and checksums before publishing it, since published assets and the
+associated tag become immutable. Corrections require a new version. See
+[the release protection guide](docs/releases.md). Publishing automation remains
+planned work.
 
 ## 22. PyPI
 
