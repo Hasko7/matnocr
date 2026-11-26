@@ -735,11 +735,20 @@ matnocr = "matnocr.cli:app"
 The console entry point launches `matnocr`; `python -m matnocr` is also
 available. Local wheel/sdist builds, archive checks, fresh wheel installation,
 and CLI smoke checks have passed locally on Python 3.13 and on GitHub's
-`windows-2025` runner across Python 3.11–3.14. Publishing remains planned work.
+`windows-2025` runner across Python 3.11–3.14. Version 0.1.0 is published on
+PyPI through GitHub Actions Trusted Publishing.
 
 ## 16. Installation for Users
 
-Users can install directly from the public GitHub repository with uv and Git:
+Users can install version 0.1.0 from PyPI with uv:
+
+```powershell
+uv tool install --python 3.13 matnocr
+matnocr doctor
+```
+
+Installation directly from the public GitHub repository remains available with
+uv and Git:
 
 ```powershell
 uv tool install --python 3.13 "git+https://github.com/Hasko7/matnocr.git"
@@ -763,9 +772,10 @@ uv tool install .
 After changes to the checkout, this kind of tool installation must be updated.
 Development changes can be tested directly with `uv run matnocr`.
 
-After a future PyPI publication, `uv tool install matnocr`, `pipx install matnocr`,
-and `pip install matnocr` are planned. According to the roadmap, PyPI publishing
-and public GitHub releases have not been configured yet.
+The published PyPI wheel and its current dependencies have been installed in a
+fresh Python 3.13 environment with `uv pip`; the complete CLI smoke test passed.
+Separate checks of `uv tool`, pipx, and pip installation remain on the roadmap.
+Public GitHub releases and packaged Windows binaries are still planned.
 
 ## 17. Windows Binary / GitHub Release
 
@@ -953,14 +963,13 @@ immutability is enabled for future GitHub releases. Prepare a draft with all
 assets and checksums before publishing it, since published assets and the
 associated tag become immutable. Corrections require a new version. See
 [the release protection guide](docs/releases.md). Separate TestPyPI and PyPI
-Python-package workflows are present. The user confirmed a TestPyPI `0.1.0`
-upload and installation, as well as the pending PyPI Trusted Publisher setup.
-Production PyPI publication, Windows binaries, and GitHub Release automation
-remain planned.
+Python-package workflows are present. Version 0.1.0 was published to TestPyPI
+and PyPI through GitHub Actions Trusted Publishing. Windows binaries and GitHub
+Release automation remain planned.
 
 ## 22. PyPI
 
-The project is intended to be published on PyPI later.
+Version 0.1.0 is published on PyPI.
 
 Example:
 
@@ -1014,8 +1023,7 @@ Executable:  matnocr.exe
 ```
 
 The collision checks are recorded as completed in Phase 0 of `TODO.md`.
-Selecting the name does not mean publication on GitHub or PyPI has already
-happened.
+The name is used by the public GitHub repository and PyPI project.
 
 ## 26. Positioning
 

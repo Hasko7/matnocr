@@ -546,17 +546,18 @@ and `matnocr doctor` passed.
 
 ### 35. PyPI Trusted Publishing
 
-- [ ] Create the PyPI project
+- [x] Create the PyPI project
 - [x] Configure GitHub Trusted Publishing
-- [ ] Use OIDC instead of a long-lived API token
+- [x] Use OIDC instead of a long-lived API token
 - [x] Create a separate release workflow
 
 The separate `testpypi.yml` and `release.yml` workflows build and test on
 Windows, then publish the same wheel and sdist through OIDC in a restricted job.
 The PyPI workflow also checks that the tag matches the package version and that
-the tagged commit is on `main`. The user confirmed the `pypi` GitHub environment
-and pending Trusted Publisher configuration. The PyPI project and production
-publication are still pending.
+the tagged commit is on `main`. The `v0.1.0` GitHub Actions run succeeded and
+published a wheel and sdist through OIDC. A fresh Python 3.13 environment
+installed `matnocr==0.1.0` from PyPI with current dependencies, and the full
+synthetic-PDF CLI smoke test passed, including real Windows OCR.
 
 ### 36. Test PyPI installation
 
@@ -575,6 +576,10 @@ pipx install matnocr
 - [ ] `uv tool`
 - [ ] pipx
 - [ ] pip
+
+A fresh-environment installation with `uv pip install` from the public PyPI
+index and a complete CLI smoke test passed on Python 3.13. The three listed
+installation methods remain to be checked separately.
 
 ## Phase 8 – GitHub Releases / Windows Distribution
 
