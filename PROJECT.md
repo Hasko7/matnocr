@@ -952,7 +952,9 @@ tags without bypass exceptions; new tags can still be created. Release
 immutability is enabled for future GitHub releases. Prepare a draft with all
 assets and checksums before publishing it, since published assets and the
 associated tag become immutable. Corrections require a new version. See
-[the release protection guide](docs/releases.md). Publishing automation remains
+[the release protection guide](docs/releases.md). Separate TestPyPI and PyPI
+Python-package workflows are present but await account configuration and a
+hosted publication check. Windows binary and GitHub Release automation remain
 planned work.
 
 ## 22. PyPI

@@ -1,25 +1,25 @@
 # TODO – MatnOCR
 
-> Projektname, Paketname und CLI-Befehl: `MatnOCR` / `matnocr`.
+> Project name, package name, and CLI command: `MatnOCR` / `matnocr`.
 
-## Phase 0 – Entscheidungen vor dem eigentlichen Projektaufbau
+## Phase 0 – Decisions before project setup
 
-### 1. Projektname festlegen
+### 1. Choose a project name
 
-- [x] Namensideen sammeln
-- [x] kurze und gut merkbare Namen bevorzugen
-- [x] prüfen, ob der Name als CLI-Befehl gut funktioniert
-- [x] PyPI auf Namenskollision prüfen
-- [x] GitHub auf Namenskollision prüfen
-- [x] winget auf Namenskollision prüfen
-- [x] npm auf Namenskollision prüfen
-- [x] Cargo auf Namenskollision prüfen
-- [x] Suchmaschinenprüfung durchführen
-- [x] endgültigen Paketnamen festlegen: `matnocr`
-- [x] endgültigen CLI-Befehl festlegen: `matnocr`
-- [x] endgültigen GitHub-Repository-Namen festlegen: `matnocr`
+- [x] Collect name ideas
+- [x] Prefer short, memorable names
+- [x] Check whether the name works well as a CLI command
+- [x] Check PyPI for name conflicts
+- [x] Check GitHub for name conflicts
+- [x] Check winget for name conflicts
+- [x] Check npm for name conflicts
+- [x] Check Cargo for name conflicts
+- [x] Check search engines for name conflicts
+- [x] Choose the final package name: `matnocr`
+- [x] Choose the final CLI command: `matnocr`
+- [x] Choose the final GitHub repository name: `matnocr`
 
-Entscheidung:
+Decision:
 
 ```text
 Brand:       MatnOCR
@@ -30,62 +30,62 @@ GitHub repo: matnocr
 Executable:  matnocr.exe
 ```
 
-### 2. PDF-Renderer vergleichen: PyMuPDF vs. pypdfium2
+### 2. Compare PDF renderers: PyMuPDF vs. pypdfium2
 
-- [x] `pypdfium2` Testprojekt erstellen
-- [x] PDF-Seiten direkt in RAM rendern
-- [x] PDFium-Buffer direkt in `SoftwareBitmap` überführen
-- [x] dieselben sechs Benchmark-Seiten verwenden
-- [x] 200 DPI testen
-- [x] 250 DPI testen
-- [x] 300 DPI testen
-- [x] Rendering-Zeit vergleichen
-- [x] Bitmap-Konvertierung vergleichen
-- [x] OCR-Zeit vergleichen
-- [x] Gesamtzeit vergleichen
-- [ ] Speicherverbrauch vergleichen *(nicht blockierend für v0.1)*
-- [x] OCR-Ausgaben vergleichen
-- [ ] Installation / Wheel-Größe vergleichen *(Wheel-Größe noch messen; nicht blockierend)*
-- [x] Lizenzfolgen dokumentieren
-- [x] endgültigen Renderer auswählen: `pypdfium2`
+- [x] Create a `pypdfium2` test project
+- [x] Render PDF pages directly in RAM
+- [x] Convert the PDFium buffer directly to `SoftwareBitmap`
+- [x] Use the same six benchmark pages
+- [x] Test at 200 DPI
+- [x] Test at 250 DPI
+- [x] Test at 300 DPI
+- [x] Compare rendering time
+- [x] Compare bitmap conversion time
+- [x] Compare OCR time
+- [x] Compare total time
+- [ ] Compare memory usage *(not blocking for v0.1)*
+- [x] Compare OCR output
+- [ ] Compare installation and wheel size *(wheel size still to be measured; not blocking)*
+- [x] Document licensing implications
+- [x] Choose the final renderer: `pypdfium2`
 
-Entscheidung:
+Decision:
 
 ```text
-pypdfium2 + permissive Projektlizenz
+pypdfium2 + permissive project license
 ```
 
-Begründung:
+Rationale:
 
-- direkter Originalscan-Fast-Path für gescannte PDFs
-- OCR-Qualität bei 200 / 250 / 300 DPI praktisch auf PyMuPDF-Niveau
-- keine temporären PNG-Dateien und kein Pillow nötig
-- Direct-RAM-Pipeline bleibt erhalten
-- normaler PDFium-Renderpfad bleibt als Fallback
-- permissivere Lizenzsituation als bei PyMuPDF/AGPL
+- Direct original-scan fast path for scanned PDFs
+- OCR quality at 200 / 250 / 300 DPI is practically on par with PyMuPDF
+- No temporary PNG files or Pillow required
+- Preserves the Direct-RAM pipeline
+- Keeps normal PDFium page rendering as a fallback
+- More permissive licensing than PyMuPDF/AGPL
 
-### 3. Lizenz festlegen
+### 3. Choose a license
 
-- [x] Renderer-Entscheidung abwarten
-- [x] Kernabhängigkeiten und deren Lizenzen prüfen
-- [x] zwischen AGPL / MIT / Apache-2.0 entscheiden
-- [x] Projektlizenz festlegen: `Apache-2.0`
-- [x] `LICENSE` erstellen
-- [x] Drittanbieter-Lizenzpflichten dokumentieren (`THIRD_PARTY_NOTICES.md`)
-- [x] Lizenz im `pyproject.toml` eintragen
-- [x] Lizenzhinweise in README ergänzen
-- [ ] bei Windows-Binärreleases PDFium- und Third-Party-Lizenzdateien mit ausliefern
+- [x] Wait for the renderer decision
+- [x] Check core dependencies and their licenses
+- [x] Choose between AGPL / MIT / Apache-2.0
+- [x] Choose the project license: `Apache-2.0`
+- [x] Create `LICENSE`
+- [x] Document third-party licensing obligations (`THIRD_PARTY_NOTICES.md`)
+- [x] Add the license to `pyproject.toml`
+- [x] Add license information to the README
+- [ ] Include complete PDFium and third-party license files in Windows binary releases
 
-Lizenzentscheidung:
+License decision:
 
 ```text
 MatnOCR: Apache-2.0
 ```
 
-Wichtige Abhängigkeiten:
+Key dependencies:
 
 ```text
-pypdfium2 / PDFium    permissiv (Apache-2.0 / BSD-3-Clause bzw. BSD-style + Third-Party-Lizenzen)
+pypdfium2 / PDFium    permissive (Apache-2.0 / BSD-3-Clause or BSD-style + third-party licenses)
 PyWinRT                MIT
 Typer                  MIT
 Rich                   MIT
@@ -94,7 +94,7 @@ ty                     MIT
 pytest                 MIT
 ```
 
-In `pyproject.toml` konfiguriert:
+Configured in `pyproject.toml`:
 
 ```toml
 [project]
@@ -102,27 +102,27 @@ license = "Apache-2.0"
 license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 ```
 
-## Phase 1 – Projekt sauber aufsetzen
+## Phase 1 – Set up the project
 
-### 4. Neues Git-Projekt erstellen
+### 4. Create a new Git project
 
-- [x] bestehenden Projektordner mit endgültigem Namen verwenden
+- [x] Use the existing project directory with the final name
 - [x] `git init`
-- [x] `.gitignore` für Python / uv / VS Code / Build-Artefakte erstellen
-- [x] initiale Branch-Strategie festlegen (`main`)
-- [x] ersten Commit erstellen
+- [x] Create `.gitignore` for Python / uv / VS Code / build artifacts
+- [x] Choose the initial branch strategy (`main`)
+- [x] Create the first commit
 
-### 5. uv-Projekt initialisieren
+### 5. Initialize the uv project
 
 - [x] `uv init --app`
-- [x] Python-Minimum festlegen, zunächst `>=3.11`
-- [x] `src/`-Layout verwenden
-- [x] `uv.lock` erzeugen
-- [x] `uv_build` als Build-Backend prüfen / konfigurieren
-- [x] Runtime Dependencies eintragen
-- [x] Dev Dependencies eintragen
+- [x] Set the minimum Python version, initially `>=3.11`
+- [x] Use a `src/` layout
+- [x] Generate `uv.lock`
+- [x] Evaluate and configure `uv_build` as the build backend
+- [x] Add runtime dependencies
+- [x] Add development dependencies
 
-### 6. Geplante Paketstruktur anlegen
+### 6. Create the planned package structure
 
 - [x] `src/matnocr/__init__.py`
 - [x] `src/matnocr/__main__.py`
@@ -136,42 +136,42 @@ license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 - [x] `src/matnocr/config.py`
 - [x] `src/matnocr/ui.py`
 
-### 7. Aktuellen OCR-Prototyp modularisieren
+### 7. Modularize the current OCR prototype
 
-- [x] Windows-OCR-Code aus dem Testskript extrahieren
-- [x] Engine-Erstellung in eigenes Modul verschieben
-- [x] Direct-RAM-Pipeline übernehmen
-- [x] PDF-Renderer abstrahieren
-- [x] RTL-Rekonstruktion in eigenes Modul verschieben
-- [x] Language Resolution auslagern
-- [x] Output-Erzeugung auslagern
-- [x] Timing-Code optional / strukturiert machen
-- [x] keine globalen Projektvariablen mehr verwenden
-- [x] verdächtige Nicht-Text-Seiten mit einer kontrollierten 125-DPI-OCR prüfen und OCR-Artefakte verwerfen
+- [x] Extract Windows OCR code from the test script
+- [x] Move engine creation to its own module
+- [x] Preserve the Direct-RAM pipeline
+- [x] Abstract the PDF renderer
+- [x] Move RTL reconstruction to its own module
+- [x] Separate language resolution
+- [x] Separate output generation
+- [x] Make timing code optional and structured
+- [x] Remove global project variables
+- [x] Validate suspicious non-text pages with a controlled 125 DPI OCR pass and discard OCR artifacts
 
-## Phase 2 – CLI v0.1 bauen
+## Phase 2 – Build the v0.1 CLI
 
-### 8. Typer + Rich integrieren
+### 8. Integrate Typer + Rich
 
-- [x] Typer hinzufügen
-- [x] Rich hinzufügen
-- [x] Haupt-App erstellen
-- [x] schöne `--help`-Ausgabe gestalten
-- [x] Farb- und Panel-Design festlegen
-- [x] einheitliche Fehlermeldungen definieren
-- [x] Terminal ohne ANSI / CI berücksichtigen
+- [x] Add Typer
+- [x] Add Rich
+- [x] Create the main app
+- [x] Design a helpful `--help` display
+- [x] Define the color and panel design
+- [x] Define consistent error messages
+- [x] Support terminals without ANSI and CI environments
 
-### 9. Console Entry Point einrichten
+### 9. Configure the console entry point
 
-- [x] `[project.scripts]` konfigurieren
+- [x] Configure `[project.scripts]`
 - [x] `matnocr = "matnocr.cli:app"`
-- [x] lokale Installation testen
-- [x] prüfen, dass `matnocr --help` funktioniert
-- [x] `python -m matnocr` ebenfalls unterstützen
+- [x] Test local installation
+- [x] Verify that `matnocr --help` works
+- [x] Support `python -m matnocr` as well
 
-### 10. Basisargumente implementieren
+### 10. Implement basic arguments
 
-- [x] PDF als positional Argument
+- [x] PDF as a positional argument
 - [x] `--lang`
 - [x] `--dpi`
 - [x] `--quality`
@@ -179,74 +179,74 @@ license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 - [x] `--quiet`
 - [x] `--version`
 
-### 11. DPI-Presets implementieren
+### 11. Implement DPI presets
 
 - [x] `fast -> 200`
 - [x] `balanced -> 250`
 - [x] `quality -> 300`
-- [x] Konflikt zwischen `--quality` und `--dpi` sauber behandeln
-- [x] Standardmodus festlegen: `quality` / 300 DPI
+- [x] Handle conflicts between `--quality` and `--dpi` clearly
+- [x] Set the default mode: `quality` / 300 DPI
 
-### 12. Page-Range-Parser implementieren
+### 12. Implement page-range parsing
 
-Unterstützen:
+Support:
 
 ```text
 30-50
 1,5,20-35,100
 ```
 
-- [x] einzelne Seiten
-- [x] Bereiche
-- [x] Kombinationen
-- [x] Duplikate entfernen
-- [x] Reihenfolge definieren: aufsteigend nach PDF-Seite
-- [x] ungültige Seiten erkennen
-- [x] Seiten außerhalb der PDF erkennen
-- [x] gute Fehlermeldungen schreiben
-- [x] Seitenanzahl einer PDF mit `--page-count` ausgeben
+- [x] Individual pages
+- [x] Ranges
+- [x] Combinations
+- [x] Remove duplicates
+- [x] Define ordering: ascending by PDF page number
+- [x] Reject invalid page numbers
+- [x] Reject pages outside the PDF
+- [x] Write helpful error messages
+- [x] Show PDF page count with `--page-count`
 
-### 13. `languages` Command
+### 13. `languages` command
 
-- [x] installierte Windows-OCR-Sprachen dynamisch auslesen
-- [x] Sprachcode anzeigen
-- [x] lesbaren Namen anzeigen
-- [x] aktive / verfügbare Sprachen als Rich-Tabelle darstellen
-- [x] fehlende Sprache bei OCR-Aufruf verständlich melden
-- [x] persistente Standardsprache mit `languages default <code>` setzen
-- [x] Sprachpaketverwaltung über administrative Windows PowerShell integrieren
-- [x] Sprachen mit `languages install <code>` installieren und mit `languages remove <code>` entfernen
-- [x] alle verfügbaren Windows-OCR-Capabilities mit `languages available` dynamisch anzeigen
-- [x] administrative PowerShell über Windows UAC öffnen, wenn MatnOCR nicht erhöht läuft
-- [x] aktuell gewählte Standardsprache bei `matnocr languages` direkt anzeigen
-- [x] Standardsprache im Haupt-Hilfetext von `matnocr` direkt anzeigen
+- [x] Discover installed Windows OCR languages dynamically
+- [x] Display language codes
+- [x] Display readable language names
+- [x] Show active and available languages in a Rich table
+- [x] Explain missing languages during OCR clearly
+- [x] Save a persistent default language with `languages default <code>`
+- [x] Manage language packs through administrative Windows PowerShell
+- [x] Install languages with `languages install <code>` and remove them with `languages remove <code>`
+- [x] List all available Windows OCR capabilities dynamically with `languages available`
+- [x] Open administrative PowerShell through Windows UAC when MatnOCR is not elevated
+- [x] Show the selected default language in `matnocr languages`
+- [x] Show the default language in the main `matnocr` help text
 
-### 14. `doctor` Command
+### 14. `doctor` command
 
-Prüfen:
+Check:
 
-- [x] unterstütztes Windows
-- [x] Windows.Media.Ocr verfügbar
-- [x] installierte OCR-Sprachen
-- [x] PDF-Renderer verfügbar
-- [x] Direct-RAM-Konvertierung funktioniert
-- [x] max. Bilddimension auslesen
-- [x] Python-Version anzeigen
-- [x] Paketversion anzeigen
-- [x] Diagnose klar mit ✓ / ✗ darstellen
+- [x] Supported Windows version
+- [x] Availability of Windows.Media.Ocr
+- [x] Installed OCR languages
+- [x] Availability of the PDF renderer
+- [x] Working Direct-RAM conversion
+- [x] Maximum OCR image dimension
+- [x] Display Python version
+- [x] Display package version
+- [x] Show diagnostic results clearly with ✓ / ✗
 
 ### 15. Progress UI
 
-- [x] Rich Progress Bar
-- [x] aktuelle Seite
-- [x] Seitenanzahl
-- [x] Geschwindigkeit / pages per second
-- [x] elapsed time
+- [x] Rich progress bar
+- [x] Current page
+- [x] Page count
+- [x] Speed in pages per second
+- [x] Elapsed time
 - [x] ETA
-- [x] nach Abschluss Zusammenfassung
-- [x] `--quiet` ohne Animation unterstützen
+- [x] Show a summary after completion
+- [x] Support `--quiet` without animation
 
-Beispielziel:
+Example target:
 
 ```text
 OCR  ████████████████████████████████  71/71
@@ -258,110 +258,109 @@ OCR  █████████████████████████
 
 ### 16. Output v0.1
 
-- [x] TXT als anfänglichen Standard beibehalten
-- [x] einfaches Markdown mit `# Page <PDF-Seitennummer>` aus v0.2 vorziehen
-- [x] Standardausgabe mit `output default txt|md` speichern und mit `output` anzeigen
-- [x] verfügbare Ausgabeformate und Beispiele bei `output` und `output --help` anzeigen
-- [x] einmalige Formatwahl mit `--format txt|md`
-- [x] Format anhand von `-o`-Endung wählen (`.txt`, `.md`, `.markdown`)
-- [x] Endungslosen Zielen gewählte Formatendung ergänzen; ungültige und widersprüchliche Endungen vor OCR ablehnen
-- [x] Format- und Spracheinstellungen beim Speichern gegenseitig erhalten
-- [x] Seitenmarker beibehalten
-- [x] UTF-8 schreiben
-- [x] automatischen Dateinamen erzeugen
-- [x] OCR-Zeilenumbrüche aus `OcrLine` standardmäßig beibehalten
-- [x] Absatzerkennung über Bounding-Boxes als Standardmodus
-- [x] Layout mit `--no-layout` abschalten und Text fortlaufend verbinden
-- [x] Layoutmodus ohne zweite OCR-Runde und ohne temporäre Rasterdateien
-- [x] existierende Dateien nicht versehentlich überschreiben
-- [x] Verhalten für `--output` und Formatwahl definieren (mit `--force` als explizitem Überschreibschutz)
-- [x] Fehler bei nicht beschreibbaren Pfaden sauber behandeln
+- [x] Keep TXT as the initial default
+- [x] Bring simple Markdown with `# Page <PDF page number>` forward from v0.2
+- [x] Save the default output format with `output default txt|md` and show it with `output`
+- [x] Show available output formats and examples in `output` and `output --help`
+- [x] Support one-time format selection with `--format txt|md`
+- [x] Select the format from the `-o` extension (`.txt`, `.md`, `.markdown`)
+- [x] Append the selected format extension to extensionless targets; reject invalid or conflicting extensions before OCR
+- [x] Preserve format and language settings when saving either preference
+- [x] Preserve page markers
+- [x] Write UTF-8
+- [x] Generate automatic filenames
+- [x] Preserve OCR line breaks from `OcrLine` by default
+- [x] Detect paragraphs from bounding boxes in the default layout mode
+- [x] Disable layout with `--no-layout` and join text continuously
+- [x] Preserve layout without a second OCR pass or temporary raster files
+- [x] Avoid accidental overwrites of existing files
+- [x] Define `--output` and format-selection behavior, with `--force` for deliberate overwrites
+- [x] Handle unwritable output paths cleanly
 
-## Phase 3 – Qualität und Tests
+## Phase 3 – Quality and tests
 
-### 17. Ruff einrichten
+### 17. Configure Ruff
 
-- [x] Ruff als Dev Dependency
+- [x] Add Ruff as a development dependency
 - [x] `ruff check`
 - [x] `ruff format`
-- [x] sinnvolle Regeln in `pyproject.toml`
-- [x] lokale Formatierung dokumentieren (`README.md`)
+- [x] Configure appropriate rules in `pyproject.toml`
+- [x] Document local formatting (`README.md`)
 
 ### 18. Type Checking
 
-- [x] `ty` als Dev Dependency eintragen
-- [x] `ty` im Projekt vollständig testen
-- [x] `ty check` konfigurieren
-- [x] PyWinRT-Typing-Probleme prüfen
-- [x] nötige Ausnahmen dokumentieren
+- [x] Add `ty` as a development dependency
+- [x] Run `ty` across the project
+- [x] Configure `ty check`
+- [x] Investigate PyWinRT typing issues
+- [x] Document necessary exceptions
 
-### 19. pytest einrichten
+### 19. Configure pytest
 
-- [x] pytest und pytest-cov als Dev Dependencies eintragen
-- [x] Unit-Test-Struktur erstellen
-- [x] Integration-Test-Struktur erstellen
-- [x] pytest konfigurieren
+- [x] Add pytest and pytest-cov as development dependencies
+- [x] Create the unit-test structure
+- [x] Create the integration-test structure
+- [x] Configure pytest
 
 ### 20. Unit Tests
 
 - [x] Page-Range-Parser
 - [x] Language Resolution
-- [x] RTL-Sortierung
-- [x] Dateinamengenerierung
+- [x] RTL sorting
+- [x] Filename generation
 - [x] Quality-Presets
 - [x] Output Formatting
 - [x] CLI Validation
-- [x] Konfiguration
+- [x] Configuration
 
 ### 21. Integration Tests
 
 - [x] PDF-Renderer
 - [x] Direct-RAM-Pipeline
-- [x] SoftwareBitmap-Erstellung
+- [x] SoftwareBitmap creation
 - [x] Windows OCR
-- [x] reale OCR auf kleinem Testdokument
-- [x] Test überspringen, wenn notwendige OCR-Sprache fehlt
-- [x] Testdaten lizenzrechtlich sauber halten
+- [x] Real OCR on a small test document
+- [x] Skip tests when the required OCR language is missing
+- [x] Keep test data clear of copyright issues
 
-### 22. Eigene Test-PDFs erstellen
+### 22. Create original test PDFs
 
-- [x] synthetische englische PDF (zur Testlaufzeit erzeugt)
-- [x] synthetische deutsche Scan-PDF mit Umlauten und ß (zur Testlaufzeit erzeugt)
-- [x] synthetische arabische Scan-PDF mit verbundenen Buchstaben und RTL-Prüfung (zur Testlaufzeit erzeugt)
+- [x] Synthetic English PDF (generated during the test)
+- [x] Synthetic German scanned PDF with umlauts and ß (generated during the test)
+- [x] Synthetic Arabic scanned PDF with connected letters and RTL checks (generated during the test)
 
-Die Testtexte sind selbst verfasst. Gemeinfreie Texte bleiben eine optionale
-Alternative, keine zusätzliche Pflichtaufgabe.
+The test texts are original. Public-domain texts remain an optional alternative,
+not an additional required task.
 
-Dauerhafte Regel: Keine urheberrechtlich problematischen Buchseiten oder
-privaten Benchmark-Dateien committen. Systemschriften werden nur lokal zum
-Rendern verwendet; Schriftdateien werden nicht mitgeliefert.
+Standing rule: Do not commit copyrighted book pages or private benchmark files.
+System fonts are used only for local rendering; font files are not distributed.
 
-## Phase 4 – Dokumentation und Open Source
+## Phase 4 – Documentation and open source
 
-### 23. README schreiben
+### 23. Write the README
 
-README enthält:
+The README includes:
 
-- [x] Projektbeschreibung
-- [x] Screenshot / CLI-Beispiel
-- [x] README für neue Nutzer strukturieren und Detaildokumentation nach `docs/` auslagern
-- [x] Screenshot-Pfade und Anleitung unter `docs/images/` vorbereiten
-- [x] echten Terminal-Screenshot als `docs/images/terminal.png` ergänzen (Nutzer)
-- [x] arabische Buchseite als `docs/images/book_page.png` mit unverändertem OCR-Beispiel ergänzen (Nutzer)
+- [x] Project description
+- [x] Screenshot / CLI example
+- [x] Structure the README for new users and move detailed documentation to `docs/`
+- [x] Prepare screenshot paths and instructions under `docs/images/`
+- [x] Add a real terminal screenshot as `docs/images/terminal.png` (user)
+- [x] Add an Arabic book page as `docs/images/book_page.png` with an unchanged OCR example (user)
 - [x] Features
 - [x] Installation
-- [x] kurze GitHub-Installationsanleitung mit Voraussetzungen, lokalem Klonen und geprüftem Python-Status ergänzen
+- [x] Add a short GitHub installation guide covering prerequisites, local cloning, and verified Python support
 - [x] Quick Start
-- [x] Sprachen
-- [x] Windows-OCR-Sprachpakete
+- [x] Languages
+- [x] Windows OCR language packs
 - [x] Page Ranges
 - [x] DPI / Quality Modes
 - [x] Benchmarks
 - [x] Limitations
-- [x] Lizenz
+- [x] License
 - [x] Contributing
 
-### 24. Open-Source-Dateien
+### 24. Open-source files
 
 - [x] `LICENSE`
 - [x] `CONTRIBUTING.md`
@@ -378,7 +377,7 @@ README enthält:
 - [x] Pull Request Template
 - [x] OCR Quality Report Template
 
-OCR Quality Report fragt unter anderem ab:
+The OCR Quality Report asks for, among other things:
 
 ```text
 language
@@ -392,21 +391,21 @@ actual OCR
 
 ## Phase 5 – GitHub Repository
 
-### 26. GitHub Repository erstellen
+### 26. Create the GitHub repository
 
-- [x] Public Repository erstellen
-- [x] Beschreibung setzen
-- [x] Topics hinzufügen
-- [x] Lizenz anzeigen lassen
-- [x] Default Branch `main`
-- [x] lokalen Git-Remote setzen
-- [x] ersten Commit pushen
-- [x] Issue-Formulare auf GitHub prüfen
-- [x] PR-Vorlage beim ersten echten Pull Request auf GitHub prüfen (PR #1)
-- [x] privates Vulnerability Reporting aktivieren und den Meldeweg in `SECURITY.md` prüfen
-- [x] Moderationsmeldeweg in `CODE_OF_CONDUCT.md` festlegen: GitHub-Meldetools, bewusst keine öffentliche E-Mail-Adresse und kein direkter privater Projektkontakt
+- [x] Create a public repository
+- [x] Set a description
+- [x] Add topics
+- [x] Display the license
+- [x] Set `main` as the default branch
+- [x] Set the local Git remote
+- [x] Push the first commit
+- [x] Check the issue forms on GitHub
+- [x] Check the pull request template on the first real GitHub PR (PR #1)
+- [x] Enable private vulnerability reporting and verify the reporting path in `SECURITY.md`
+- [x] Define the moderation reporting path in `CODE_OF_CONDUCT.md`: GitHub reporting tools, intentionally without a public email address or direct private project contact
 
-Mögliche Topics:
+Possible topics:
 
 ```text
 ocr
@@ -420,23 +419,22 @@ pdf-ocr
 offline-ocr
 ```
 
-### 27. Branch- und Release-Schutz aktivieren
+### 27. Enable branch and release protection
 
-- [x] Pull Requests vor Merge
-- [x] CI muss erfolgreich sein (Check `CI` von GitHub Actions verpflichtend; Branch muss aktuell sein)
-- [x] versehentliches Force Push verhindern
-- [x] Tags / Releases schützen
-- [x] aktives Tag-Ruleset `Protect version tags` für `v*`: Änderungen und Löschungen gesperrt, keine Bypass-Ausnahmen
-- [x] Release Immutability für zukünftige GitHub Releases aktivieren
+- [x] Require pull requests before merging
+- [x] Require successful CI (GitHub Actions `CI` check; branch must be up to date)
+- [x] Prevent accidental force pushes
+- [x] Protect tags and releases
+- [x] Activate the `Protect version tags` ruleset for `v*`: block changes and deletion, with no bypass exceptions
+- [x] Enable release immutability for future GitHub releases
 
-Neue Versions-Tags können weiterhin erstellt werden. Für Releases zuerst einen
-Entwurf mit allen Assets vorbereiten und erst anschließend veröffentlichen.
-Veröffentlichte Assets sind dann unveränderlich; Korrekturen erhalten eine neue
-Version. Einrichtung und Ablauf stehen in `docs/releases.md`.
+New version tags can still be created. For releases, prepare a draft with all
+assets before publishing. Published assets are then immutable; corrections
+require a new version. Setup and procedure are documented in `docs/releases.md`.
 
 ## Phase 6 – GitHub CI
 
-### 28. GitHub Actions CI erstellen
+### 28. Create GitHub Actions CI
 
 Workflow:
 
@@ -445,106 +443,125 @@ push
 pull_request
 ```
 
-Schritte:
+Steps:
 
 - [x] Checkout
-- [x] uv installieren
-- [x] Python installieren
+- [x] Install uv
+- [x] Install Python
 - [x] `uv sync --locked`
 - [x] `ruff check`
 - [x] `ruff format --check`
 - [x] `ty check`
 - [x] `pytest`
-- [x] Package bauen
-- [x] gebauten Wheel installieren
+- [x] Build the package
+- [x] Install the built wheel
 - [x] CLI Smoke Test
 
-Der Workflow ist implementiert und auf GitHub für Python 3.11–3.14 erfolgreich
-geprüft. Der [erfolgreiche Lauf auf main](https://github.com/Hasko7/matnocr/actions/runs/45465791622)
-prüft alle vier Versionen einschließlich Build, frischer Wheel-Installation und
-CLI-Smoke-Tests. CLI-Tests erzeugen eigene Eingabepfade; erzwungene
-Terminalformatierung ist im Workflow deaktiviert.
+The workflow is implemented and has passed on GitHub for Python 3.11–3.14.
+The [successful run on main](https://github.com/Hasko7/matnocr/actions/runs/45465791622)
+checks all four versions, including build, fresh wheel installation, and CLI
+smoke tests. CLI tests create their own input paths; forced terminal formatting
+is disabled in the workflow.
 
-- [x] ersten erfolgreichen GitHub-Lauf auf dem PR und auf main prüfen (Matrix und echte Runner-Capabilities)
+- [x] Verify the first successful GitHub run on the PR and on main (matrix and actual runner capabilities)
 
 ### 29. Windows Runner
 
-- [x] Windows GitHub Runner konfigurieren (`windows-2025`; Hosted-Lauf erfolgreich)
-- [x] Runner-Image-Familie festlegen (`windows-2025`; konkrete Image-Version im Actions-Log)
-- [x] verfügbare Windows-OCR-Sprachen im ersten GitHub-Lauf untersuchen: `en-US`; Deutsch und Arabisch fehlen
-- [x] kleine Integrationstests im Workflow aktivieren
-- [x] OCR-Sprachabhängige Tests bei fehlender Runtime oder Sprache sauber skippen
+- [x] Configure a Windows GitHub runner (`windows-2025`; hosted run successful)
+- [x] Choose the runner image family (`windows-2025`; exact image version recorded in the Actions log)
+- [x] Inspect available Windows OCR languages in the first GitHub run: `en-US`; German and Arabic are missing
+- [x] Enable small integration tests in the workflow
+- [x] Skip OCR language-dependent tests cleanly when the runtime or language is missing
 
 ### 30. Python CI Matrix
 
-Matrix 3.11–3.14 ist auf GitHub erfolgreich geprüft:
+The Python 3.11–3.14 matrix passed on GitHub:
 
 - [x] Python 3.11
 - [x] Python 3.12
 - [x] Python 3.13
 - [x] Python 3.14
 
-Im Hosted-Lauf bestehen pro Version 142 Tests; zwei OCR-Integrationstests werden
-wegen fehlender deutscher und arabischer Sprachpakete übersprungen. Lokal unter
-Python 3.13 bestehen mit diesen Sprachpaketen alle 144 Tests. Die Hosted-Matrix
-belegt damit keine reale deutsche oder arabische OCR auf allen Python-Versionen.
+Each hosted job passes 142 tests; two OCR integration tests are skipped because
+German and Arabic language packs are missing. Locally, all 144 tests pass on
+Python 3.13 with those packs installed. The hosted matrix therefore does not
+establish real German or Arabic OCR compatibility across all Python versions.
 
 ### 31. Security Automation
 
 - [ ] Dependabot
 - [ ] CodeQL
-- [x] minimale GitHub-Action-Berechtigungen (`contents: read` im CI-Workflow)
-- [x] CI-Actions auf geprüfte Commit-SHAs und uv auf Version pinnen
+- [x] Set minimal GitHub Actions permissions (`contents: read` in the CI workflow)
+- [x] Pin CI actions to verified commit SHAs and uv to a version
 
 ## Phase 7 – Python Packaging / PyPI
 
-### 32. `pyproject.toml` finalisieren
+### 32. Finalize `pyproject.toml`
 
-- [ ] Package Metadata
-- [ ] Name
-- [ ] Version
-- [ ] Description
-- [ ] Readme
-- [ ] License
-- [ ] Authors
-- [ ] Python-Version
-- [ ] Dependencies
-- [ ] Optional Dev Dependencies
-- [ ] Project URLs
-- [ ] CLI Entry Point
-- [ ] Classifiers
+- [x] Package Metadata
+- [x] Name
+- [x] Version
+- [x] Description
+- [x] Readme
+- [x] License
+- [x] Authors
+- [x] Python version
+- [x] Dependencies
+- [x] Optional Dev Dependencies
+- [x] Project URLs
+- [x] CLI Entry Point
+- [x] Classifiers
 
-### 33. Build lokal testen
+Development tools remain in `[dependency-groups].dev` and are not part of the
+published package dependencies. The wheel and sdist were built; their metadata,
+CLI entry point, and included license files were checked.
+
+### 33. Test the local build
 
 - [x] `uv build`
-- [x] sdist prüfen
-- [x] wheel prüfen
-- [x] frische virtuelle Umgebung erstellen
-- [x] wheel dort installieren
-- [ ] CLI vollständig testen
+- [x] Inspect the sdist
+- [x] Inspect the wheel
+- [x] Create a fresh virtual environment
+- [x] Install the wheel there
+- [x] Test the CLI thoroughly
+
+The freshly built wheel was installed on Windows in a separate Python 3.13
+environment with locked runtime dependencies. The repeatable
+`tools/cli_full_smoke.py` test checks the installed console command and
+`python -m matnocr`, help, version, diagnostics, languages, settings, page count,
+real OCR on an original two-page PDF, TXT/Markdown, page selection, DPI,
+`--quiet`, `--force`, and common error cases. Settings and test output stay in
+a temporary directory. Installing or removing Windows language packs is outside
+the scope of this local CLI test.
 
 ### 34. TestPyPI
 
-- [ ] TestPyPI-Account / Projekt vorbereiten
-- [ ] ersten Testrelease hochladen
-- [ ] Installation von TestPyPI testen
+- [ ] Prepare a TestPyPI account and project
+- [ ] Upload the first test release
+- [ ] Test installation from TestPyPI
 
 ### 35. PyPI Trusted Publishing
 
-- [ ] PyPI-Projekt anlegen
-- [ ] GitHub Trusted Publisher konfigurieren
-- [ ] OIDC statt langfristigem API Token verwenden
-- [ ] separaten Release-Workflow erstellen
+- [ ] Create the PyPI project
+- [ ] Configure GitHub Trusted Publishing
+- [ ] Use OIDC instead of a long-lived API token
+- [x] Create a separate release workflow
 
-### 36. PyPI Installation testen
+The separate `testpypi.yml` and `release.yml` workflows build and test on
+Windows, then publish the same wheel and sdist through OIDC in a restricted job.
+The PyPI workflow also checks that the tag matches the package version and that
+the tagged commit is on `main`. Account setup, Trusted Publisher registration,
+and a successful hosted publication are still pending.
 
-Später:
+### 36. Test PyPI installation
+
+Later:
 
 ```powershell
 uv tool install matnocr
 ```
 
-und:
+and:
 
 ```powershell
 pipx install matnocr
@@ -556,19 +573,19 @@ pipx install matnocr
 
 ## Phase 8 – GitHub Releases / Windows Distribution
 
-### 37. PyInstaller evaluieren
+### 37. Evaluate PyInstaller
 
-- [ ] `onedir` bauen
-- [ ] `onefile` bauen
-- [ ] Startup-Zeit vergleichen
-- [ ] Dateigröße vergleichen
-- [ ] WinRT-Kompatibilität prüfen
-- [ ] PDF-Renderer-Binaries prüfen
-- [ ] frischen Windows-PC / VM testen
+- [ ] Build `onedir`
+- [ ] Build `onefile`
+- [ ] Compare startup time
+- [ ] Compare file size
+- [ ] Check WinRT compatibility
+- [ ] Check PDF renderer binaries
+- [ ] Test on a clean Windows PC or VM
 
 ### 38. GitHub Release Assets
 
-Geplant:
+Planned:
 
 ```text
 matnocr-windows-x64.zip
@@ -578,9 +595,9 @@ sdist
 SHA256SUMS.txt
 ```
 
-- [ ] Release Notes generieren
-- [ ] Checksums erstellen
-- [ ] Artefakte automatisch hochladen
+- [ ] Generate release notes
+- [ ] Create checksums
+- [ ] Upload artifacts automatically
 
 ### 39. Release Workflow
 
@@ -600,21 +617,21 @@ test
 → create GitHub Release
 ```
 
-- [ ] Versionen müssen überall identisch sein
-- [ ] Release nur aus getaggtem Commit
-- [ ] fehlerhafte Builds dürfen nicht veröffentlicht werden
-- [ ] alle Release-Assets einschließlich Checksums zuerst an einen Entwurf anhängen und erst danach unveränderlich veröffentlichen
+- [ ] Require identical versions everywhere
+- [ ] Release only from a tagged commit
+- [ ] Do not publish failed builds
+- [ ] Attach all release assets, including checksums, to a draft before publishing an immutable release
 
 ## Phase 9 – v0.1.0 Release
 
 ### 40. Feature Freeze
 
-v0.1 soll enthalten:
+v0.1 should include:
 
 - [ ] PDF OCR
 - [ ] Direct RAM
 - [ ] Windows OCR
-- [ ] dynamische Sprachen
+- [ ] Dynamic languages
 - [ ] RTL
 - [ ] `--lang`
 - [ ] `--pages`
@@ -632,140 +649,140 @@ v0.1 soll enthalten:
 - [ ] PyPI
 - [ ] GitHub Release
 
-### 41. v0.1 Benchmark dokumentieren
+### 41. Document the v0.1 benchmark
 
 - [ ] 200 DPI
 - [ ] 250 DPI
 - [ ] 300 DPI
-- [ ] mehrere PDF-Typen
-- [ ] mehrere Sprachen
-- [ ] Hardware dokumentieren
-- [ ] Seiten/s dokumentieren
+- [ ] Multiple PDF types
+- [ ] Multiple languages
+- [ ] Document hardware
+- [ ] Document pages per second
 
-## Version 0.2 – geplante Erweiterungen
+## Version 0.2 – Planned extensions
 
-### 42. Zusätzliche Ausgabeformate
+### 42. Additional output formats
 
-- [x] einfaches Markdown nach v0.1 vorgezogen (Seitenüberschriften und gespeicherter Standard)
-- [ ] PDF-Export nach der ersten öffentlichen Veröffentlichung ergänzen (Ziel v0.2)
-- [ ] Text-PDF: neues PDF mit sichtbarem OCR-Text, Arabisch-/RTL-Darstellung, Schriften und Seitenumbrüchen
-- [ ] Durchsuchbare Scan-PDF: Originalseiten mit unsichtbarer OCR-Textebene zum Suchen und Kopieren
-- [ ] PDF-Backend und Abhängigkeiten einschließlich Lizenz- und Distribution-Folgen prüfen
-- [ ] PDF-Export für beide Varianten mit arabischem Text und Such-/Kopierverhalten testen
+- [x] Bring simple Markdown forward to v0.1 (page headings and saved default)
+- [ ] Add PDF export after the first public release (target v0.2)
+- [ ] Text PDF: create a new PDF with visible OCR text, Arabic/RTL rendering, fonts, and page breaks
+- [ ] Searchable scan PDF: preserve original pages with an invisible OCR text layer for searching and copying
+- [ ] Evaluate the PDF backend and dependencies, including licensing and distribution implications
+- [ ] Test both PDF variants with Arabic text and search/copy behavior
 - [ ] JSON
 - [ ] JSONL
-- [ ] Bounding Boxes exportieren
+- [ ] Export bounding boxes
 
 ### 43. Batch OCR
 
-- [ ] ganze Ordner
-- [ ] mehrere PDFs
-- [ ] Output-Verzeichnis
-- [ ] Fehler eines Dokuments sollen Batch nicht komplett stoppen
+- [ ] Entire directories
+- [ ] Multiple PDFs
+- [ ] Output directory
+- [ ] A failure in one document should not stop the entire batch
 
 ### 44. Resume / Checkpointing
 
-- [ ] Verarbeitung großer Bücher fortsetzen
-- [ ] bereits fertige Seiten erkennen
-- [ ] temporäre Job-Metadaten
+- [ ] Resume processing large books
+- [ ] Detect already completed pages
+- [ ] Temporary job metadata
 
 ### 45. Benchmark Command
 
-Beispiel:
+Example:
 
 ```powershell
 matnocr benchmark book.pdf
 ```
 
-- [ ] Renderzeit
-- [ ] Bitmapzeit
-- [ ] OCR-Zeit
-- [ ] Seiten/s
+- [ ] Rendering time
+- [ ] Bitmap conversion time
+- [ ] OCR time
+- [ ] Pages per second
 - [ ] JSON Benchmark Output
 
-### 46. Verbesserte Nachbearbeitung
+### 46. Improved postprocessing
 
 Optional:
 
 - [ ] `--clean`
 - [ ] `--normalize-arabic`
-- [ ] BiDi-Steuerzeichen
+- [ ] BiDi control characters
 - [ ] Unicode Normalization
-- [ ] ﷺ-Normalisierung
-- [ ] offensichtliche Artefakte
+- [ ] ﷺ normalization
+- [ ] Obvious artifacts
 
-Wichtig:
+Important:
 
-- [ ] Raw OCR muss weiterhin verfügbar bleiben
+- [ ] Raw OCR must remain available
 
 ### 47. Alternative OCR Engine
 
-- [ ] Tesseract Fast als optionalen Backend-Prototyp testen
-- [ ] Windows OCR vs. Tesseract vergleichen
-- [ ] optionales Fallback untersuchen
-- [ ] Ensemble nur bauen, wenn messbar bessere Qualität
+- [ ] Test Tesseract Fast as an optional backend prototype
+- [ ] Compare Windows OCR with Tesseract
+- [ ] Investigate an optional fallback
+- [ ] Build an ensemble only if it measurably improves quality
 
-### 48. Strukturierte Buch-OCR
+### 48. Structured book OCR
 
-Langfristig prüfen:
+Evaluate in the long term:
 
-- [ ] Überschriftenerkennung
-- [ ] Fußnoten
-- [ ] Seitenzahlen
-- [ ] Absatzrekonstruktion
-- [ ] Spalten
-- [ ] Tabellen
-- [ ] Markdown-Ausgabe
+- [ ] Heading detection
+- [ ] Footnotes
+- [ ] Page numbers
+- [ ] Paragraph reconstruction
+- [ ] Columns
+- [ ] Tables
+- [ ] Markdown output
 
-## Version 0.3+ / langfristige Ideen
+## Version 0.3+ / Long-term ideas
 
 ### 49. Native Windows Installer
 
-- [ ] winget Package
-- [ ] möglicher MSI / Installer
-- [ ] automatische PATH-Einrichtung
-- [ ] OCR-Sprachpaket-Hilfe
+- [ ] winget package
+- [ ] Possible MSI / installer
+- [ ] Automatic PATH setup
+- [ ] OCR language-pack guidance
 
 ### 50. ARM64
 
-- [ ] Windows ARM64 testen
-- [ ] PyWinRT Wheels prüfen
-- [ ] PDF-Renderer prüfen
-- [ ] eigenes Release Asset bauen
+- [ ] Test Windows ARM64
+- [ ] Check PyWinRT wheels
+- [ ] Check the PDF renderer
+- [ ] Build a dedicated release asset
 
-### 51. Performance-Experimente
+### 51. Performance experiments
 
-Nur nach Profiling:
+Only after profiling:
 
 - [ ] Parallel Rendering
 - [ ] Pipeline-Prefetch
-- [ ] mehrere OCR Engines
-- [ ] Speicherpool
+- [ ] Multiple OCR engines
+- [ ] Memory pool
 - [ ] Batch Bitmap Conversion
 
-Keine Optimierung ohne vorherige Messung.
+Do not optimize without measuring first.
 
-### 52. Optionale GUI
+### 52. Optional GUI
 
-Nur langfristig und getrennt von der CLI:
+Only in the long term, separate from the CLI:
 
-- [ ] GUI-Konzept prüfen
-- [ ] CLI bleibt Kern
-- [ ] GUI soll dieselbe OCR-Library verwenden
+- [ ] Evaluate a GUI concept
+- [ ] Keep the CLI as the core
+- [ ] Use the same OCR library for the GUI
 
-## Grundprinzipien
+## Core principles
 
-Bei allen zukünftigen Entscheidungen gelten:
+Apply these principles to all future decisions:
 
 ```text
-1. Geschwindigkeit messen, nicht vermuten.
-2. Raw OCR nicht still verändern.
-3. CLI einfach halten.
-4. Windows-native OCR als Kern beibehalten.
-5. Arabisch als Haupt-Use-Case ernst nehmen.
-6. Andere Windows-OCR-Sprachen vollständig unterstützen.
-7. Releases reproduzierbar bauen.
-8. Open-Source-Lizenz sauber behandeln.
-9. Große Bücher müssen zuverlässig funktionieren.
-10. Keine unnötige Komplexität in v0.1.
+1. Measure speed; do not guess.
+2. Do not silently alter raw OCR.
+3. Keep the CLI simple.
+4. Keep Windows-native OCR as the core.
+5. Treat Arabic as the primary use case.
+6. Fully support other Windows OCR languages.
+7. Build reproducible releases.
+8. Handle open-source licensing correctly.
+9. Process large books reliably.
+10. Avoid unnecessary complexity in v0.1.
 ```

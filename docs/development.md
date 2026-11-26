@@ -72,6 +72,13 @@ See [the integration test notes](../tests/integration/README.md) for details.
 The full suite currently requires Windows because application modules imported
 by unit tests use WinRT.
 
+For a local end-to-end check of a built wheel, install that wheel and its locked
+runtime dependencies in a fresh Windows virtual environment, then run
+`python -I tools/cli_full_smoke.py` with that environment's Python. The script
+requires the `en-US` Windows OCR language pack and checks the installed console
+entry point with a synthetic two-page PDF. It isolates settings and output in a
+temporary directory and does not change Windows OCR language packs.
+
 ## GitHub Actions CI
 
 The workflow in [ci.yml](../.github/workflows/ci.yml) runs on pushes to `main`,

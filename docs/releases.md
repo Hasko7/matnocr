@@ -20,10 +20,26 @@ These are GitHub repository settings; cloning the repository does not configure
 them. Inspect them under **Settings → Rules → Rulesets** and
 **Settings → General → Releases → Enable release immutability**.
 
-## Publishing Order for the Future Release Workflow
+## Python Package Publishing Workflows
 
-Package metadata, TestPyPI/PyPI publication, Windows builds, and release
-automation still have open roadmap tasks. When implementing that workflow:
+The repository has separate Python-package workflows:
+
+- `.github/workflows/testpypi.yml` runs manually from `main` and targets
+  TestPyPI using the `testpypi` GitHub environment.
+- `.github/workflows/release.yml` runs on a new `v*` tag and targets PyPI using
+  the `pypi` GitHub environment. It checks that the tag matches the version in
+  `pyproject.toml` and that the tagged commit is on `main`.
+
+Both workflows run checks and build the wheel and sdist on Windows before a
+separate job publishes them through OIDC. They require matching pending Trusted
+Publishers on TestPyPI and PyPI; neither has been used for a hosted upload yet.
+The `pypi` environment can require a reviewer before publication. These
+workflows publish Python packages only. Windows binary builds and the complete
+GitHub Release pipeline remain planned work in `TODO.md`.
+
+## Publishing Order for a Complete Release
+
+When the full release pipeline is implemented:
 
 1. Select a reviewed commit with successful checks, and verify that the package
    version matches its new version tag, such as `v0.1.0`.
