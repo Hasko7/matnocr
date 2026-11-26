@@ -31,13 +31,13 @@ The repository has separate Python-package workflows:
   `pyproject.toml` and that the tagged commit is on `main`.
 
 Both workflows run checks and build the wheel and sdist on Windows before a
-separate job publishes them through OIDC. The user confirmed a successful
-TestPyPI upload and fresh-environment installation of version `0.1.0`. The user
-also confirmed configuration of the `pypi` GitHub environment and pending PyPI
-Trusted Publisher. The PyPI project will be created on first publication. The
-`pypi` environment can require a reviewer before publication. These workflows
-publish Python packages only. Windows binary builds and the complete GitHub
-Release pipeline remain planned work in `TODO.md`.
+separate job publishes them through OIDC. Version `0.1.0` was uploaded to
+TestPyPI and PyPI. The PyPI workflow completed successfully from tag `v0.1.0`,
+and the published wheel and sdist were confirmed through PyPI's API. A fresh
+PyPI installation passed the full synthetic-PDF CLI smoke test on Python 3.13.
+The `pypi` environment can require a reviewer before publication. These
+workflows publish Python packages only. Windows binary builds and the complete
+GitHub Release pipeline remain planned work in `TODO.md`.
 
 ## Publishing Order for a Complete Release
 

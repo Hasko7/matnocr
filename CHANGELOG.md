@@ -1,9 +1,13 @@
 # Changelog
 
 This file records notable user-facing changes. Entries under `Unreleased` are
-development work, not a claim that a public release has been published.
+development work after the latest published version.
 
 ## Unreleased
+
+No changes yet.
+
+## 0.1.0
 
 ### Added
 
@@ -36,4 +40,5 @@ development work, not a claim that a public release has been published.
 - Suppressed the PDFium foreign-bitmap close warning in the scan fast path
   after verifying that OCR uses an independent pixel copy.
 
-Public PyPI releases and packaged Windows releases are still planned.
+Version 0.1.0 was published to PyPI through GitHub Actions Trusted Publishing.
+Packaged Windows releases are still planned.
