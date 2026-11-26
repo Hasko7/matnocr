@@ -953,9 +953,10 @@ immutability is enabled for future GitHub releases. Prepare a draft with all
 assets and checksums before publishing it, since published assets and the
 associated tag become immutable. Corrections require a new version. See
 [the release protection guide](docs/releases.md). Separate TestPyPI and PyPI
-Python-package workflows are present but await account configuration and a
-hosted publication check. Windows binary and GitHub Release automation remain
-planned work.
+Python-package workflows are present. The user confirmed a TestPyPI `0.1.0`
+upload and installation, as well as the pending PyPI Trusted Publisher setup.
+Production PyPI publication, Windows binaries, and GitHub Release automation
+remain planned.
 
 ## 22. PyPI
 

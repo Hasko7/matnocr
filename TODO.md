@@ -536,22 +536,27 @@ the scope of this local CLI test.
 
 ### 34. TestPyPI
 
-- [ ] Prepare a TestPyPI account and project
-- [ ] Upload the first test release
-- [ ] Test installation from TestPyPI
+- [x] Prepare a TestPyPI account and project
+- [x] Upload the first test release
+- [x] Test installation from TestPyPI
+
+The user confirmed that version `0.1.0` was published to TestPyPI through the
+workflow and installed successfully in a fresh environment; `matnocr --version`
+and `matnocr doctor` passed.
 
 ### 35. PyPI Trusted Publishing
 
 - [ ] Create the PyPI project
-- [ ] Configure GitHub Trusted Publishing
+- [x] Configure GitHub Trusted Publishing
 - [ ] Use OIDC instead of a long-lived API token
 - [x] Create a separate release workflow
 
 The separate `testpypi.yml` and `release.yml` workflows build and test on
 Windows, then publish the same wheel and sdist through OIDC in a restricted job.
 The PyPI workflow also checks that the tag matches the package version and that
-the tagged commit is on `main`. Account setup, Trusted Publisher registration,
-and a successful hosted publication are still pending.
+the tagged commit is on `main`. The user confirmed the `pypi` GitHub environment
+and pending Trusted Publisher configuration. The PyPI project and production
+publication are still pending.
 
 ### 36. Test PyPI installation
 

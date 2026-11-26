@@ -31,11 +31,13 @@ The repository has separate Python-package workflows:
   `pyproject.toml` and that the tagged commit is on `main`.
 
 Both workflows run checks and build the wheel and sdist on Windows before a
-separate job publishes them through OIDC. They require matching pending Trusted
-Publishers on TestPyPI and PyPI; neither has been used for a hosted upload yet.
-The `pypi` environment can require a reviewer before publication. These
-workflows publish Python packages only. Windows binary builds and the complete
-GitHub Release pipeline remain planned work in `TODO.md`.
+separate job publishes them through OIDC. The user confirmed a successful
+TestPyPI upload and fresh-environment installation of version `0.1.0`. The user
+also confirmed configuration of the `pypi` GitHub environment and pending PyPI
+Trusted Publisher. The PyPI project will be created on first publication. The
+`pypi` environment can require a reviewer before publication. These workflows
+publish Python packages only. Windows binary builds and the complete GitHub
+Release pipeline remain planned work in `TODO.md`.
 
 ## Publishing Order for a Complete Release
 
