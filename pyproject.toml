@@ -4,10 +4,22 @@ version = "0.1.0"
 description = "Fast local OCR for scanned PDFs on Windows."
 readme = "README.md"
 requires-python = ">=3.11"
+authors = [{ name = "Hasko7" }]
 license = "Apache-2.0"
 license-files = [
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Text Processing",
 ]
 dependencies = [
     "pypdfium2>=5.13.0",
@@ -20,6 +32,13 @@ dependencies = [
     "winrt-windows-media-ocr>=3.2.1",
     "winrt-windows-storage-streams>=3.2.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Hasko7/matnocr"
+Documentation = "https://github.com/Hasko7/matnocr/tree/main/docs"
+Repository = "https://github.com/Hasko7/matnocr"
+Issues = "https://github.com/Hasko7/matnocr/issues"
+Changelog = "https://github.com/Hasko7/matnocr/blob/main/CHANGELOG.md"
 
 [project.scripts]
 matnocr = "matnocr.cli:app"
